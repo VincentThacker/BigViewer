@@ -73,7 +73,6 @@
             pathBox.Name = "pathBox";
             pathBox.Size = new Size(702, 31);
             pathBox.TabIndex = 2;
-            pathBox.Text = "D:\\Projects\\Glu\\GB1_312\\res_high\\pack3_xga.big";
             // 
             // resourceList
             // 
