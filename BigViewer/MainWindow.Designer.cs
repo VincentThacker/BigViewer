@@ -42,6 +42,7 @@
             exportDataButton = new Button();
             searchButton = new Button();
             resultsBox = new ListBox();
+            saveButton = new Button();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             SuspendLayout();
             // 
@@ -57,6 +58,7 @@
             // 
             // viewButton
             // 
+            viewButton.Enabled = false;
             viewButton.Location = new Point(130, 49);
             viewButton.Name = "viewButton";
             viewButton.Size = new Size(112, 34);
@@ -160,7 +162,7 @@
             // exportDataButton
             // 
             exportDataButton.Enabled = false;
-            exportDataButton.Location = new Point(248, 49);
+            exportDataButton.Location = new Point(484, 49);
             exportDataButton.Name = "exportDataButton";
             exportDataButton.Size = new Size(112, 34);
             exportDataButton.TabIndex = 5;
@@ -188,11 +190,23 @@
             resultsBox.Size = new Size(348, 154);
             resultsBox.TabIndex = 7;
             // 
+            // saveButton
+            // 
+            saveButton.Enabled = false;
+            saveButton.Location = new Point(248, 49);
+            saveButton.Name = "saveButton";
+            saveButton.Size = new Size(112, 34);
+            saveButton.TabIndex = 8;
+            saveButton.Text = "Save";
+            saveButton.UseVisualStyleBackColor = true;
+            saveButton.Click += saveButton_Click;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(726, 861);
+            Controls.Add(saveButton);
             Controls.Add(resultsBox);
             Controls.Add(searchButton);
             Controls.Add(exportDataButton);
@@ -225,5 +239,6 @@
         private DataGridViewTextBoxColumn FirstWord;
         private DataGridViewTextBoxColumn Format;
         private ListBox resultsBox;
+        private Button saveButton;
     }
 }

@@ -1,7 +1,6 @@
 using Microsoft.VisualBasic;
 using NAudio.Vorbis;
 using NAudio.Wave;
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Media;
 using System.Text.RegularExpressions;
@@ -168,8 +167,10 @@ namespace BigViewer
                         }
                         resourceList.Rows.Add(((int)resourceItem[0]).ToString(), resourceType, "0x" + ((uint)resourceItem[2]).ToString("X"), "0x" + ((uint)resourceItem[3]).ToString("X"), BitConverter.ToString((byte[])resourceItem[4]), formatType);
                     }
-                    exportDataButton.Enabled = true;
+                    viewButton.Enabled = true;
+                    saveButton.Enabled = true;
                     searchButton.Enabled = true;
+                    exportDataButton.Enabled = true;
                 }
                 // Incorrect FGIB header
                 else
@@ -344,29 +345,53 @@ namespace BigViewer
             }
         }
 
-        private void exportDataButton_Click(object sender, EventArgs e)
+        private void saveButton_Click(object sender, EventArgs e)
         {
-            byte[] dataType = new byte[] { 0x23, 0x22, 0xE0, 0xF4 };
-            List<List<Object>> masterListDataOnly = masterList.Where(x => ((byte[])x[1]).SequenceEqual(dataType)).ToList();
-            List<byte> data = new List<byte>();
-            foreach (List<Object> resourceItem in masterListDataOnly)
+            if (resourceList.SelectedRows.Count == 1)
             {
-                data.AddRange((byte[])resourceItem[6]);
-            }
-
-            // Write to file
-            try
-            {
-                using (var fs = new FileStream(validPath + "data", FileMode.Create, FileAccess.Write))
+                List<Object> resourceItem = masterList[resourceList.SelectedRows[0].Index];
+                string filter;
+                switch ((byte[])resourceItem[1])
                 {
-                    fs.Write(data.ToArray(), 0, data.Count);
+                    case [0x23, 0x22, 0xE0, 0xF4]:
+                        filter = "Data (*.bin)|*.bin";
+                        break;
+                    case [0x78, 0x86, 0x17, 0xB7]:
+                        filter = "PNG files (*.png)|*.png";
+                        break;
+                    case [0x54, 0x77, 0x8A, 0xFD]:
+                        filter = "WAV files (*.wav)|*.wav";
+                        break;
+                    case [0x52, 0x49, 0x46, 0x46]:
+                        filter = "OGG files (*.ogg)|*.ogg";
+                        break;
+                    case [0xDC, 0xAA, 0x86, 0xF6]:
+                        filter = "Data (*.bin)|*.bin";
+                        break;
+                    default:
+                        filter = "All files (*.*)|*.*";
+                        break;
+                }
+
+                byte[] dat = (byte[])resourceItem[6];
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = filter;
+                saveFileDialog1.FilterIndex = 1;
+                saveFileDialog1.RestoreDirectory = true;
+
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    using (FileStream fs = new FileStream(saveFileDialog1.FileName, FileMode.Create, FileAccess.Write))
+                    {
+                        fs.Write(dat, 0, dat.Length);
+                    }
                 }
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                MessageBox.Show("Number of selected items is incorrect!", "Error");
             }
-            dataType = null;
+            
         }
 
         private void searchButton_Click(object sender, EventArgs e)
@@ -395,6 +420,31 @@ namespace BigViewer
             }
         }
 
+        private void exportDataButton_Click(object sender, EventArgs e)
+        {
+            byte[] dataType = new byte[] { 0x23, 0x22, 0xE0, 0xF4 };
+            List<List<Object>> masterListDataOnly = masterList.Where(x => ((byte[])x[1]).SequenceEqual(dataType)).ToList();
+            List<byte> data = new List<byte>();
+            foreach (List<Object> resourceItem in masterListDataOnly)
+            {
+                data.AddRange((byte[])resourceItem[6]);
+            }
+
+            // Write to file
+            try
+            {
+                using (FileStream fs = new FileStream(validPath + "data", FileMode.Create, FileAccess.Write))
+                {
+                    fs.Write(data.ToArray(), 0, data.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+            }
+            dataType = null;
+        }
+
         void Reset()
         {
             // master = null;
@@ -408,8 +458,10 @@ namespace BigViewer
             infoBox.Items.Clear();
             resultsBox.Items.Clear();
             resourceList.Rows.Clear();
-            exportDataButton.Enabled = false;
+            viewButton.Enabled = false;
+            saveButton.Enabled = false;
             searchButton.Enabled = false;
+            exportDataButton.Enabled = false;
         }
 
         static MemoryStream DecompZlibData(byte[] data)
@@ -452,11 +504,6 @@ namespace BigViewer
                 }
             }
             return matchesList.ToArray();
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }
