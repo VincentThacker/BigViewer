@@ -412,7 +412,7 @@ namespace BigViewer
                         string[] r = new string[resCount];
                         for (int i = 0; i < resCount; i++)
                         {
-                            r[i] = "0x" + i.ToString("X");
+                            r[i] = "0x" + resu[i].ToString("X");
                         }
                         resultsBox.Items.Add(resourceItem[0].ToString() + ": " + String.Join(", ", r));
                     }
