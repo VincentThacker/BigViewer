@@ -4,6 +4,7 @@ using NAudio.Wave;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Media;
+using System.Text.RegularExpressions;
 
 namespace BigViewer
 {
@@ -34,13 +35,12 @@ namespace BigViewer
                 // Correct FGIB header
                 if (master[0x0..0x4].SequenceEqual(new byte[] { 0x46, 0x47, 0x49, 0x42 }))
                 {
+                    Reset();
+
                     validPath = pathBox.Text;
 
-                    infoBox1.Items.Clear();
-                    resourceList.Rows.Clear();
-
                     // Read file header and display in infoBox1
-                    infoBox1.Items.Add("Header size: " + "0x" + BitConverter.ToUInt32(master[0x8..0xC]).ToString("X"));
+                    infoBox.Items.Add("Header size: " + "0x" + BitConverter.ToUInt32(master[0x8..0xC]).ToString("X"));
 
                     tableStart = BitConverter.ToUInt32(master[0x10..0x14]);
                     resourceCount = BitConverter.ToUInt32(master[0x14..0x18]);
@@ -48,11 +48,11 @@ namespace BigViewer
                     contentSize = BitConverter.ToUInt32(master[0x1C..0x20]);
                     tableEnd = BitConverter.ToUInt32(master[checked((int)(tableStart + 4))..checked((int)(tableStart + 8))]);
 
-                    infoBox1.Items.Add("TOC start: " + "0x" + tableStart.ToString("X"));
-                    infoBox1.Items.Add("Resource count: " + resourceCount.ToString());
-                    infoBox1.Items.Add("Content start: " + "0x" + contentStartPosition.ToString("X"));
-                    infoBox1.Items.Add("Clean size: " + contentSize.ToString());
-                    infoBox1.Items.Add("TOC end: " + "0x" + tableEnd.ToString("X"));
+                    infoBox.Items.Add("TOC start: " + "0x" + tableStart.ToString("X"));
+                    infoBox.Items.Add("Resource count: " + resourceCount.ToString());
+                    infoBox.Items.Add("Content start: " + "0x" + contentStartPosition.ToString("X"));
+                    infoBox.Items.Add("Clean size: " + contentSize.ToString());
+                    infoBox.Items.Add("TOC end: " + "0x" + tableEnd.ToString("X"));
 
                     // Check for inconsistencies and show error if present
                     string errs = "";
@@ -90,13 +90,8 @@ namespace BigViewer
                         testList = null;
                         sortList = null;
                         MessageBox.Show("TOC is not ordered! Abandoning.", "Error");
-                        contentSize = 0;
-                        contentStartPosition = 0;
-                        resourceCount = 0;
-                        tableStart = 0;
-                        tableEnd = 0;
-                        validPath = "";
-                        infoBox1.Items.Clear();
+                        Reset();
+                        master = null;
                         return;
                     }
                     else
@@ -173,6 +168,8 @@ namespace BigViewer
                         }
                         resourceList.Rows.Add(((int)resourceItem[0]).ToString(), resourceType, "0x" + ((uint)resourceItem[2]).ToString("X"), "0x" + ((uint)resourceItem[3]).ToString("X"), BitConverter.ToString((byte[])resourceItem[4]), formatType);
                     }
+                    exportDataButton.Enabled = true;
+                    searchButton.Enabled = true;
                 }
                 // Incorrect FGIB header
                 else
@@ -377,12 +374,45 @@ namespace BigViewer
             byte[] dataType = new byte[] { 0x23, 0x22, 0xE0, 0xF4 };
             List<List<Object>> masterListDataOnly = masterList.Where(x => ((byte[])x[1]).SequenceEqual(dataType)).ToList();
             string input = Interaction.InputBox("Enter sequence of bytes to search (separated by -)", "Search");
-            foreach (List<Object> resourceItem in masterListDataOnly)
+            if ((new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$")).IsMatch(input))
             {
+                resultsBox.Items.Clear();
+                byte[] pattern = GetBytes(input);
+                foreach (List<Object> resourceItem in masterListDataOnly)
+                {
+                    int[] resu = FindSequence((byte[])resourceItem[6], pattern);
+                    int resCount = resu.Length;
+                    if (resCount > 0)
+                    {
+                        string[] r = new string[resCount];
+                        for (int i = 0; i < resCount; i++)
+                        {
+                            r[i] = "0x" + i.ToString("X");
+                        }
+                        resultsBox.Items.Add(resourceItem[0].ToString() + ": " + String.Join(", ", r));
+                    }
+                }
             }
         }
 
-        MemoryStream DecompZlibData(byte[] data)
+        void Reset()
+        {
+            // master = null;
+            masterList = [];
+            contentSize = 0;
+            contentStartPosition = 0;
+            resourceCount = 0;
+            tableStart = 0;
+            tableEnd = 0;
+            validPath = "";
+            infoBox.Items.Clear();
+            resultsBox.Items.Clear();
+            resourceList.Rows.Clear();
+            exportDataButton.Enabled = false;
+            searchButton.Enabled = false;
+        }
+
+        static MemoryStream DecompZlibData(byte[] data)
         {
             MemoryStream result = new MemoryStream();
             try
@@ -397,8 +427,14 @@ namespace BigViewer
             return result;
         }
 
-        public static bool FindSequence(byte[] data, byte[] pattern)
+        public static byte[] GetBytes(string input)
         {
+            return input.Split('-').Select((s) => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToArray();
+        }
+
+        static int[] FindSequence(byte[] data, byte[] pattern)
+        {
+            List<int> matchesList = [];
             for (int i = 0; i + pattern.Length <= data.Length; i++)
             {
                 bool allSame = true;
@@ -412,10 +448,15 @@ namespace BigViewer
                 }
                 if (allSame)
                 {
-                    return true;
+                    matchesList.Add(i);
                 }
             }
-            return false;
+            return matchesList.ToArray();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

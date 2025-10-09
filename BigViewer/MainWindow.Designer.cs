@@ -38,9 +38,10 @@
             Size = new DataGridViewTextBoxColumn();
             FirstWord = new DataGridViewTextBoxColumn();
             Format = new DataGridViewTextBoxColumn();
-            infoBox1 = new ListBox();
+            infoBox = new ListBox();
             exportDataButton = new Button();
             searchButton = new Button();
+            resultsBox = new ListBox();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             SuspendLayout();
             // 
@@ -145,18 +146,20 @@
             Format.Name = "Format";
             Format.ReadOnly = true;
             Format.Resizable = DataGridViewTriState.False;
-            Format.Width = 100;
+            Format.Width = 120;
             // 
-            // infoBox1
+            // infoBox
             // 
-            infoBox1.FormattingEnabled = true;
-            infoBox1.Location = new Point(12, 89);
-            infoBox1.Name = "infoBox1";
-            infoBox1.Size = new Size(348, 154);
-            infoBox1.TabIndex = 4;
+            infoBox.FormattingEnabled = true;
+            infoBox.HorizontalScrollbar = true;
+            infoBox.Location = new Point(12, 89);
+            infoBox.Name = "infoBox";
+            infoBox.Size = new Size(348, 154);
+            infoBox.TabIndex = 4;
             // 
             // exportDataButton
             // 
+            exportDataButton.Enabled = false;
             exportDataButton.Location = new Point(248, 49);
             exportDataButton.Name = "exportDataButton";
             exportDataButton.Size = new Size(112, 34);
@@ -167,6 +170,7 @@
             // 
             // searchButton
             // 
+            searchButton.Enabled = false;
             searchButton.Location = new Point(366, 49);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(112, 34);
@@ -175,14 +179,24 @@
             searchButton.UseVisualStyleBackColor = true;
             searchButton.Click += searchButton_Click;
             // 
+            // resultsBox
+            // 
+            resultsBox.FormattingEnabled = true;
+            resultsBox.HorizontalScrollbar = true;
+            resultsBox.Location = new Point(366, 89);
+            resultsBox.Name = "resultsBox";
+            resultsBox.Size = new Size(348, 154);
+            resultsBox.TabIndex = 7;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(726, 861);
+            Controls.Add(resultsBox);
             Controls.Add(searchButton);
             Controls.Add(exportDataButton);
-            Controls.Add(infoBox1);
+            Controls.Add(infoBox);
             Controls.Add(resourceList);
             Controls.Add(pathBox);
             Controls.Add(viewButton);
@@ -201,14 +215,15 @@
         private Button viewButton;
         private TextBox pathBox;
         private DataGridView resourceList;
-        private ListBox infoBox1;
+        private ListBox infoBox;
         private Button exportDataButton;
+        private Button searchButton;
         private DataGridViewTextBoxColumn ItemNumber;
         private DataGridViewTextBoxColumn Type;
         private DataGridViewTextBoxColumn Offset;
         private DataGridViewTextBoxColumn Size;
         private DataGridViewTextBoxColumn FirstWord;
         private DataGridViewTextBoxColumn Format;
-        private Button searchButton;
+        private ListBox resultsBox;
     }
 }
