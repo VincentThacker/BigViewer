@@ -36,7 +36,7 @@
             Type = new DataGridViewTextBoxColumn();
             Offset = new DataGridViewTextBoxColumn();
             Size = new DataGridViewTextBoxColumn();
-            FirstWord = new DataGridViewTextBoxColumn();
+            DataSize = new DataGridViewTextBoxColumn();
             Format = new DataGridViewTextBoxColumn();
             infoBox = new ListBox();
             exportDataButton = new Button();
@@ -69,6 +69,7 @@
             // 
             // pathBox
             // 
+            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pathBox.Location = new Point(12, 12);
             pathBox.Name = "pathBox";
             pathBox.Size = new Size(702, 31);
@@ -80,9 +81,12 @@
             resourceList.AllowUserToDeleteRows = false;
             resourceList.AllowUserToResizeColumns = false;
             resourceList.AllowUserToResizeRows = false;
+            resourceList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            resourceList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            resourceList.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             resourceList.ColumnHeadersHeight = 34;
             resourceList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, Size, FirstWord, Format });
+            resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, Size, DataSize, Format });
             resourceList.EditMode = DataGridViewEditMode.EditProgrammatically;
             resourceList.Location = new Point(12, 249);
             resourceList.MultiSelect = false;
@@ -102,7 +106,7 @@
             ItemNumber.Name = "ItemNumber";
             ItemNumber.ReadOnly = true;
             ItemNumber.Resizable = DataGridViewTriState.False;
-            ItemNumber.Width = 55;
+            ItemNumber.Width = 76;
             // 
             // Type
             // 
@@ -111,7 +115,7 @@
             Type.Name = "Type";
             Type.ReadOnly = true;
             Type.Resizable = DataGridViewTriState.False;
-            Type.Width = 120;
+            Type.Width = 85;
             // 
             // Offset
             // 
@@ -120,7 +124,7 @@
             Offset.Name = "Offset";
             Offset.ReadOnly = true;
             Offset.Resizable = DataGridViewTriState.False;
-            Offset.Width = 125;
+            Offset.Width = 97;
             // 
             // Size
             // 
@@ -129,16 +133,16 @@
             Size.Name = "Size";
             Size.ReadOnly = true;
             Size.Resizable = DataGridViewTriState.False;
-            Size.Width = 125;
+            Size.Width = 79;
             // 
-            // FirstWord
+            // DataSize
             // 
-            FirstWord.HeaderText = "First4Bytes";
-            FirstWord.MinimumWidth = 8;
-            FirstWord.Name = "FirstWord";
-            FirstWord.ReadOnly = true;
-            FirstWord.Resizable = DataGridViewTriState.False;
-            FirstWord.Width = 120;
+            DataSize.HeaderText = "Data Size";
+            DataSize.MinimumWidth = 8;
+            DataSize.Name = "DataSize";
+            DataSize.ReadOnly = true;
+            DataSize.Resizable = DataGridViewTriState.False;
+            DataSize.Width = 121;
             // 
             // Format
             // 
@@ -147,7 +151,7 @@
             Format.Name = "Format";
             Format.ReadOnly = true;
             Format.Resizable = DataGridViewTriState.False;
-            Format.Width = 120;
+            Format.Width = 105;
             // 
             // infoBox
             // 
@@ -160,19 +164,20 @@
             // 
             // exportDataButton
             // 
+            exportDataButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             exportDataButton.Enabled = false;
-            exportDataButton.Location = new Point(484, 49);
+            exportDataButton.Location = new Point(543, 49);
             exportDataButton.Name = "exportDataButton";
-            exportDataButton.Size = new Size(112, 34);
+            exportDataButton.Size = new Size(171, 34);
             exportDataButton.TabIndex = 5;
-            exportDataButton.Text = "Export";
+            exportDataButton.Text = "Export All Data";
             exportDataButton.UseVisualStyleBackColor = true;
             exportDataButton.Click += exportDataButton_Click;
             // 
             // searchButton
             // 
             searchButton.Enabled = false;
-            searchButton.Location = new Point(366, 49);
+            searchButton.Location = new Point(248, 49);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(112, 34);
             searchButton.TabIndex = 6;
@@ -182,6 +187,7 @@
             // 
             // resultsBox
             // 
+            resultsBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             resultsBox.FormattingEnabled = true;
             resultsBox.HorizontalScrollbar = true;
             resultsBox.Location = new Point(366, 89);
@@ -191,12 +197,13 @@
             // 
             // saveButton
             // 
+            saveButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             saveButton.Enabled = false;
-            saveButton.Location = new Point(248, 49);
+            saveButton.Location = new Point(366, 49);
             saveButton.Name = "saveButton";
-            saveButton.Size = new Size(112, 34);
+            saveButton.Size = new Size(171, 34);
             saveButton.TabIndex = 8;
-            saveButton.Text = "Save";
+            saveButton.Text = "Export Selected";
             saveButton.UseVisualStyleBackColor = true;
             saveButton.Click += saveButton_Click;
             // 
@@ -204,6 +211,7 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoSize = true;
             ClientSize = new Size(726, 861);
             Controls.Add(saveButton);
             Controls.Add(resultsBox);
@@ -214,6 +222,7 @@
             Controls.Add(pathBox);
             Controls.Add(viewButton);
             Controls.Add(loadButton);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "MainWindow";
             Text = "Big Viewer";
@@ -231,13 +240,13 @@
         private ListBox infoBox;
         private Button exportDataButton;
         private Button searchButton;
+        private ListBox resultsBox;
+        private Button saveButton;
         private DataGridViewTextBoxColumn ItemNumber;
         private DataGridViewTextBoxColumn Type;
         private DataGridViewTextBoxColumn Offset;
         private DataGridViewTextBoxColumn Size;
-        private DataGridViewTextBoxColumn FirstWord;
+        private DataGridViewTextBoxColumn DataSize;
         private DataGridViewTextBoxColumn Format;
-        private ListBox resultsBox;
-        private Button saveButton;
     }
 }

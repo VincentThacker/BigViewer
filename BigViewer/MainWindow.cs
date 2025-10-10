@@ -1,6 +1,7 @@
 using Microsoft.VisualBasic;
 using NAudio.Vorbis;
 using NAudio.Wave;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Media;
 using System.Text.RegularExpressions;
@@ -10,13 +11,13 @@ namespace BigViewer
     public partial class MainWindow : Form
     {
         byte[] master;
-        List<List<Object>> masterList = [];
+        List<Dictionary<string, object>> masterList = [];
 
         uint contentSize = 0;
-        uint contentStartPosition = 0;
+        uint tableEnd = 0;
         uint resourceCount = 0;
         uint tableStart = 0;
-        uint tableEnd = 0;
+        uint firstResourceOffset = 0;
         string validPath = "";
 
         public MainWindow()
@@ -43,15 +44,15 @@ namespace BigViewer
 
                     tableStart = BitConverter.ToUInt32(master[0x10..0x14]);
                     resourceCount = BitConverter.ToUInt32(master[0x14..0x18]);
-                    contentStartPosition = BitConverter.ToUInt32(master[0x18..0x1C]);
+                    tableEnd = BitConverter.ToUInt32(master[0x18..0x1C]);
                     contentSize = BitConverter.ToUInt32(master[0x1C..0x20]);
-                    tableEnd = BitConverter.ToUInt32(master[checked((int)(tableStart + 4))..checked((int)(tableStart + 8))]);
+                    firstResourceOffset = BitConverter.ToUInt32(master[checked((int)(tableStart + 4))..checked((int)(tableStart + 8))]);
 
                     infoBox.Items.Add("TOC start: " + "0x" + tableStart.ToString("X"));
                     infoBox.Items.Add("Resource count: " + resourceCount.ToString());
-                    infoBox.Items.Add("Content start: " + "0x" + contentStartPosition.ToString("X"));
+                    infoBox.Items.Add("Content start: " + "0x" + tableEnd.ToString("X"));
                     infoBox.Items.Add("Clean size: " + contentSize.ToString());
-                    infoBox.Items.Add("TOC end: " + "0x" + tableEnd.ToString("X"));
+                    infoBox.Items.Add("TOC end: " + "0x" + firstResourceOffset.ToString("X"));
 
                     // Check for inconsistencies and show error if present
                     string errs = "";
@@ -59,7 +60,7 @@ namespace BigViewer
                     {
                         errs += "TOC length and resource count mismatch!\n";
                     }
-                    if (tableEnd != contentStartPosition)
+                    if (firstResourceOffset != tableEnd)
                     {
                         errs += "TOC end and content start mismatch!\n";
                     }
@@ -101,7 +102,7 @@ namespace BigViewer
 
                     // Read TOC, check for compression and save processed data
                     masterList.Clear();
-                    for (int i = 1; i < resourceCount; i++)
+                    for (int i = 0; i < resourceCount; i++)
                     {
                         var num = tableStart + (i * 8);
                         uint addr = BitConverter.ToUInt32(master[checked((int)(num + 4))..checked((int)(num + 8))]); // offset
@@ -109,64 +110,67 @@ namespace BigViewer
                         uint size = BitConverter.ToUInt32(master[checked((int)(num + 12))..checked((int)(num + 16))]) - addr; // size
                         uint format = 0;
                         byte[] processedData;
-                        // Check compression type
-                        if (size > 0xC && master[checked((int)(addr + 0xC))..checked((int)(addr + 0xE))].SequenceEqual(new byte[] { 0x78, 0xDA }) && BitConverter.ToUInt32(master[checked((int)(addr + 0x8))..checked((int)(addr + 0xC))]) == size - 0xC)
-                        {
-                            // zlib
-                            format = 1;
-                            processedData = DecompZlibData(master[checked((int)(addr + 0xC))..checked((int)(addr + size))]).ToArray();
-                        }
-                        else
-                        {
-                            // Default
-                            format = 0;
-                            processedData = master[checked((int)(addr + 0x4))..checked((int)(addr + size))];
-                        }
+                        (format, processedData) = ProcessRawResourceData(master[checked((int)addr)..checked((int)(addr + size))]);
                         // no., type, offset, size, first 4 bytes, format, processed data
-                        masterList.Add(new List<Object> { i, master[checked((int)(num))..checked((int)(num + 4))], addr, size, master[checked((int)addr)..checked((int)(addr + 4))], format, processedData });
+                        masterList.Add(new Dictionary<string, object>
+                        {
+                            {"id",  i},
+                            {"type", type},
+                            {"offset", addr},
+                            {"size", size},
+                            // {"starter", master[checked((int)addr)..checked((int)(addr + 4))]}
+                            {"datasize", processedData.Length},
+                            {"format", format},
+                            {"data", processedData}
+                        });
                     }
 
                     // Populate DataGridView using masterList
-                    for (int i = 0; i < resourceCount - 1; i++)
+                    for (int i = 0; i < resourceCount; i++)
                     {
-                        List<Object> resourceItem = masterList[i];
+                        Dictionary<string, object> resourceItem = masterList[i];
                         string resourceType;
-                        switch ((byte[])resourceItem[1])
+                        switch ((byte[])resourceItem["type"])
                         {
                             case [0x23, 0x22, 0xE0, 0xF4]:
-                                resourceType = "DATA";
+                                resourceType = "data";
                                 break;
                             case [0x78, 0x86, 0x17, 0xB7]:
-                                resourceType = "PNG";
+                                resourceType = "png";
                                 break;
                             case [0x54, 0x77, 0x8A, 0xFD]:
-                                resourceType = "WAV";
+                                resourceType = "wav";
                                 break;
                             case [0x52, 0x49, 0x46, 0x46]:
-                                resourceType = "OGG";
+                                resourceType = "ogg";
+                                break;
+                            case [0x05, 0xC5, 0xE4, 0x69]:
+                                resourceType = "[start]";
                                 break;
                             case [0xDC, 0xAA, 0x86, 0xF6]:
-                                resourceType = "[END]";
+                                resourceType = "[end]";
                                 break;
                             default:
-                                resourceType = BitConverter.ToString((byte[])resourceItem[1]);
+                                resourceType = BitConverter.ToString((byte[])resourceItem["type"]);
                                 break;
                         }
                         string formatType;
-                        switch ((uint)resourceItem[5])
+                        switch ((uint)resourceItem["format"])
                         {
-                            case 0:
-                                formatType = "None";
-                                break;
                             case 1:
+                                formatType = "none";
+                                break;
+                            case 2:
                                 formatType = "zlib";
                                 break;
                             default:
-                                formatType = "Unknown";
+                                formatType = "unknown";
                                 break;
                         }
-                        resourceList.Rows.Add(((int)resourceItem[0]).ToString(), resourceType, "0x" + ((uint)resourceItem[2]).ToString("X"), "0x" + ((uint)resourceItem[3]).ToString("X"), BitConverter.ToString((byte[])resourceItem[4]), formatType);
+                        resourceList.Rows.Add(((int)resourceItem["id"]).ToString(), resourceType, "0x" + ((uint)resourceItem["offset"]).ToString("X"), "0x" + ((uint)resourceItem["size"]).ToString("X"), "0x" + ((int)resourceItem["datasize"]).ToString("X"), formatType);
                     }
+                    resourceList.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                    resourceList.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
                     viewButton.Enabled = true;
                     saveButton.Enabled = true;
                     searchButton.Enabled = true;
@@ -190,51 +194,37 @@ namespace BigViewer
         {
             if (resourceList.SelectedRows.Count == 1)
             {
-                List<Object> resourceItem = masterList[resourceList.SelectedRows[0].Index];
-                switch ((byte[])resourceItem[1]) // type
+                Dictionary<string, object> resourceItem = masterList[resourceList.SelectedRows[0].Index];
+                switch ((byte[])resourceItem["type"])
                 {
+                    /*
                     case [0x23, 0x22, 0xE0, 0xF4]:
                         try
                         {
-                            Form stringView = new Form();
-                            stringView.MinimumSize = System.Drawing.Size.Empty;
-                            stringView.AutoSize = true;
-                            stringView.MaximizeBox = false;
-                            stringView.FormBorderStyle = FormBorderStyle.FixedSingle;
-                            TableLayoutPanel tableLayoutPanel = new TableLayoutPanel();
-                            tableLayoutPanel.AutoSize = true;
-                            TextBox dataLabel = new TextBox();
-                            dataLabel.ReadOnly = true;
-                            dataLabel.Multiline = true;
-                            dataLabel.Size = new Size(1000, 500);
-                            dataLabel.Text = BitConverter.ToString((byte[])resourceItem[6]);
-                            // TextBox charLabel = new TextBox();
-                            // charLabel.ReadOnly = true;
-                            // charLabel.Size = new Size(1000, 500);
-                            // charLabel.Text = System.Text.Encoding.UTF8.GetString(res);
-                            tableLayoutPanel.Controls.Add(dataLabel);
-                            // tableLayoutPanel.Controls.Add(charLabel);
-                            stringView.Controls.Add(tableLayoutPanel);
-                            stringView.Show();
+                            HexView datView = new HexView((byte[])resourceItem["data"]);
+                            datView.Text = resourceItem["id"].ToString() + " in " + validPath;
+                            datView.Show();
                         }
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                         }
                         break;
+                    */
                     case [0x78, 0x86, 0x17, 0xB7]:
                         try
                         {
                             // Check for PNG header
-                            if (((byte[])resourceItem[6])[0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
+                            if (((byte[])resourceItem["data"])[0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
                             {
                                 Form imageView = new Form();
                                 imageView.MinimumSize = System.Drawing.Size.Empty;
                                 imageView.AutoSize = true;
                                 imageView.MaximizeBox = false;
                                 imageView.FormBorderStyle = FormBorderStyle.FixedSingle;
+                                imageView.Text = resourceItem["id"].ToString() + " in " + validPath;
                                 PictureBox imageBox = new PictureBox();
-                                imageBox.Image = Image.FromStream(new MemoryStream((byte[])resourceItem[6]));
+                                imageBox.Image = Image.FromStream(new MemoryStream((byte[])resourceItem["data"]));
                                 imageBox.SizeMode = PictureBoxSizeMode.AutoSize;
                                 imageView.Controls.Add(imageBox);
                                 imageView.Show();
@@ -253,9 +243,9 @@ namespace BigViewer
                         try
                         {
                             // Check for WAV header
-                            if (((byte[])resourceItem[6])[0..0x4].SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }) && ((byte[])resourceItem[6])[0x8..0xC].SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
+                            if (((byte[])resourceItem["data"])[0..0x4].SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }) && ((byte[])resourceItem["data"])[0x8..0xC].SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
                             {
-                                new SoundPlayer(new MemoryStream((byte[])resourceItem[6])).Play();
+                                new SoundPlayer(new MemoryStream((byte[])resourceItem["data"])).Play();
                             }
                             else
                             {
@@ -271,10 +261,10 @@ namespace BigViewer
                         try
                         {
                             // Check for OGG header
-                            if (((byte[])resourceItem[6])[0..0x4].SequenceEqual(new byte[] { 0x4F, 0x67, 0x67, 0x53 }))
+                            if (((byte[])resourceItem["data"])[0..0x4].SequenceEqual(new byte[] { 0x4F, 0x67, 0x67, 0x53 }))
                             {
                                 WaveOut waveOut = new WaveOut();
-                                waveOut.Init(new VorbisWaveReader(new MemoryStream((byte[])resourceItem[6])));
+                                waveOut.Init(new VorbisWaveReader(new MemoryStream((byte[])resourceItem["data"])));
                                 waveOut.Play();
                             }
                             else
@@ -287,50 +277,26 @@ namespace BigViewer
                             MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                         }
                         break;
+                    /*
                     case [0xDC, 0xAA, 0x86, 0xF6]:
                         try
                         {
-                            Form stringView = new Form();
-                            stringView.MinimumSize = System.Drawing.Size.Empty;
-                            stringView.AutoSize = true;
-                            stringView.MaximizeBox = false;
-                            stringView.FormBorderStyle = FormBorderStyle.FixedSingle;
-                            TextBox charLabel = new TextBox();
-                            charLabel.ReadOnly = true;
-                            charLabel.Size = new Size(1000, 500);
-                            charLabel.Text = System.Text.Encoding.UTF8.GetString((byte[])resourceItem[6]);
-                            stringView.Controls.Add(charLabel);
-                            stringView.Show();
+                            HexView datView = new HexView((byte[])resourceItem["data"]);
+                            datView.Text = resourceItem["id"].ToString() + " in " + validPath;
+                            datView.Show();
                         }
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                         }
                         break;
+                    */
                     default:
                         try
                         {
-                            // byte[] res = dat.ToArray();
-                            Form stringView = new Form();
-                            stringView.MinimumSize = System.Drawing.Size.Empty;
-                            stringView.AutoSize = true;
-                            stringView.MaximizeBox = false;
-                            stringView.FormBorderStyle = FormBorderStyle.FixedSingle;
-                            TableLayoutPanel tableLayoutPanel = new TableLayoutPanel();
-                            tableLayoutPanel.AutoSize = true;
-                            TextBox dataLabel = new TextBox();
-                            dataLabel.ReadOnly = true;
-                            dataLabel.Multiline = true;
-                            dataLabel.Size = new Size(1000, 500);
-                            dataLabel.Text = BitConverter.ToString((byte[])resourceItem[6]);
-                            // TextBox charLabel = new TextBox();
-                            // charLabel.ReadOnly = true;
-                            // charLabel.Size = new Size(1000, 500);
-                            // charLabel.Text = System.Text.Encoding.UTF8.GetString(res);
-                            tableLayoutPanel.Controls.Add(dataLabel);
-                            // tableLayoutPanel.Controls.Add(charLabel);
-                            stringView.Controls.Add(tableLayoutPanel);
-                            stringView.Show();
+                            HexView datView = new HexView((byte[])resourceItem["data"]);
+                            datView.Text = resourceItem["id"].ToString() + " in " + validPath;
+                            datView.Show();
                         }
                         catch (Exception ex)
                         {
@@ -349,13 +315,15 @@ namespace BigViewer
         {
             if (resourceList.SelectedRows.Count == 1)
             {
-                List<Object> resourceItem = masterList[resourceList.SelectedRows[0].Index];
+                Dictionary<string, object> resourceItem = masterList[resourceList.SelectedRows[0].Index];
                 string filter;
-                switch ((byte[])resourceItem[1])
+                switch ((byte[])resourceItem["type"])
                 {
+                    /*
                     case [0x23, 0x22, 0xE0, 0xF4]:
                         filter = "Data (*.bin)|*.bin";
                         break;
+                    */
                     case [0x78, 0x86, 0x17, 0xB7]:
                         filter = "PNG files (*.png)|*.png";
                         break;
@@ -365,18 +333,21 @@ namespace BigViewer
                     case [0x52, 0x49, 0x46, 0x46]:
                         filter = "OGG files (*.ogg)|*.ogg";
                         break;
+                    /*
                     case [0xDC, 0xAA, 0x86, 0xF6]:
                         filter = "Data (*.bin)|*.bin";
                         break;
+                    */
                     default:
-                        filter = "All files (*.*)|*.*";
+                        filter = "Data (*.bin)|*.bin";
                         break;
                 }
 
-                byte[] dat = (byte[])resourceItem[6];
+                byte[] dat = (byte[])resourceItem["data"];
                 SaveFileDialog saveFileDialog1 = new SaveFileDialog();
                 saveFileDialog1.Filter = filter;
                 saveFileDialog1.FilterIndex = 1;
+                saveFileDialog1.FileName = Path.GetFileNameWithoutExtension(validPath) + "_resource" + resourceItem["id"].ToString();
                 saveFileDialog1.RestoreDirectory = true;
 
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -397,15 +368,15 @@ namespace BigViewer
         private void searchButton_Click(object sender, EventArgs e)
         {
             byte[] dataType = new byte[] { 0x23, 0x22, 0xE0, 0xF4 };
-            List<List<Object>> masterListDataOnly = masterList.Where(x => ((byte[])x[1]).SequenceEqual(dataType)).ToList();
+            List<Dictionary<string, object>> masterListDataOnly = masterList.Where((x) => ((byte[])x["type"]).SequenceEqual(dataType)).ToList();
             string input = Interaction.InputBox("Enter sequence of bytes to search (separated by -)", "Search");
             if ((new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$")).IsMatch(input))
             {
                 resultsBox.Items.Clear();
                 byte[] pattern = GetBytes(input);
-                foreach (List<Object> resourceItem in masterListDataOnly)
+                foreach (Dictionary<string, object> resourceItem in masterListDataOnly)
                 {
-                    int[] resu = FindSequence((byte[])resourceItem[6], pattern);
+                    int[] resu = FindSequence((byte[])resourceItem["data"], pattern);
                     int resCount = resu.Length;
                     if (resCount > 0)
                     {
@@ -414,7 +385,7 @@ namespace BigViewer
                         {
                             r[i] = "0x" + resu[i].ToString("X");
                         }
-                        resultsBox.Items.Add(resourceItem[0].ToString() + ": " + String.Join(", ", r));
+                        resultsBox.Items.Add(resourceItem["id"].ToString() + ": " + String.Join(", ", r));
                     }
                 }
             }
@@ -423,26 +394,27 @@ namespace BigViewer
         private void exportDataButton_Click(object sender, EventArgs e)
         {
             byte[] dataType = new byte[] { 0x23, 0x22, 0xE0, 0xF4 };
-            List<List<Object>> masterListDataOnly = masterList.Where(x => ((byte[])x[1]).SequenceEqual(dataType)).ToList();
-            List<byte> data = new List<byte>();
-            foreach (List<Object> resourceItem in masterListDataOnly)
+            List<Dictionary<string, object>> masterListDataOnly = masterList.Where((x) => ((byte[])x["type"]).SequenceEqual(dataType)).ToList();
+            List<byte> dat = new List<byte>();
+            foreach (Dictionary<string, object> resourceItem in masterListDataOnly)
             {
-                data.AddRange((byte[])resourceItem[6]);
+                dat.AddRange((byte[])resourceItem["data"]);
             }
 
-            // Write to file
-            try
+            // Save to file
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "Data (*.bin)|*.bin";
+            saveFileDialog1.FilterIndex = 1;
+            saveFileDialog1.FileName = Path.GetFileNameWithoutExtension(validPath) + "_alldata";
+            saveFileDialog1.RestoreDirectory = true;
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                using (FileStream fs = new FileStream(validPath + "data", FileMode.Create, FileAccess.Write))
+                using (FileStream fs = new FileStream(saveFileDialog1.FileName, FileMode.Create, FileAccess.Write))
                 {
-                    fs.Write(data.ToArray(), 0, data.Count);
+                    fs.Write(dat.ToArray(), 0, dat.Count);
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
-            }
-            dataType = null;
         }
 
         void Reset()
@@ -450,10 +422,10 @@ namespace BigViewer
             // master = null;
             masterList = [];
             contentSize = 0;
-            contentStartPosition = 0;
+            tableEnd = 0;
             resourceCount = 0;
             tableStart = 0;
-            tableEnd = 0;
+            firstResourceOffset = 0;
             validPath = "";
             infoBox.Items.Clear();
             resultsBox.Items.Clear();
@@ -464,7 +436,7 @@ namespace BigViewer
             exportDataButton.Enabled = false;
         }
 
-        static MemoryStream DecompZlibData(byte[] data)
+        MemoryStream DecompZlibData(byte[] data)
         {
             MemoryStream result = new MemoryStream();
             try
@@ -479,12 +451,32 @@ namespace BigViewer
             return result;
         }
 
-        public static byte[] GetBytes(string input)
+        (uint, byte[]) ProcessRawResourceData(byte[] data)
+        {
+            // Check compression type
+            if  (data.Length > 0x4 && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x00, 0x00 }))
+            {
+                // none
+                return (1, data[0x4..]);
+            }
+            else if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x80, 0x00 }) && data[0xC..0xE].SequenceEqual(new byte[] { 0x78, 0xDA }) && BitConverter.ToUInt32(data[0x8..0xC]) == data.Length - 0xC)
+            {
+                // zlib
+                return (2, DecompZlibData(data[0xC..]).ToArray());
+            }
+            else
+            {
+                // Default
+                return (0, data);
+            }
+        }
+
+        byte[] GetBytes(string input)
         {
             return input.Split('-').Select((s) => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToArray();
         }
 
-        static int[] FindSequence(byte[] data, byte[] pattern)
+        int[] FindSequence(byte[] data, byte[] pattern)
         {
             List<int> matchesList = [];
             for (int i = 0; i + pattern.Length <= data.Length; i++)
