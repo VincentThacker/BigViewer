@@ -2,7 +2,7 @@
 
 namespace BigViewer
 {
-    public partial class HexView : Form
+    internal partial class HexView : Form
     {
         private DynamicByteProvider byteProvider;
 
