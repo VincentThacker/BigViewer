@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            loadButton = new Button();
+            openFileButton = new Button();
             viewButton = new Button();
             pathBox = new TextBox();
             resourceList = new DataGridView();
@@ -42,24 +42,28 @@
             exportDataButton = new Button();
             searchButton = new Button();
             resultsBox = new ListBox();
-            saveButton = new Button();
+            exportSelectedButton = new Button();
+            checksumButton = new Button();
+            replaceButton = new Button();
+            viewRawButton = new Button();
+            saveFileButton = new Button();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             SuspendLayout();
             // 
-            // loadButton
+            // openFileButton
             // 
-            loadButton.Location = new Point(12, 49);
-            loadButton.Name = "loadButton";
-            loadButton.Size = new Size(112, 34);
-            loadButton.TabIndex = 0;
-            loadButton.Text = "Load";
-            loadButton.UseVisualStyleBackColor = true;
-            loadButton.Click += loadButton_Click;
+            openFileButton.Location = new Point(12, 12);
+            openFileButton.Name = "openFileButton";
+            openFileButton.Size = new Size(112, 34);
+            openFileButton.TabIndex = 0;
+            openFileButton.Text = "Open";
+            openFileButton.UseVisualStyleBackColor = true;
+            openFileButton.Click += openFileButton_Click;
             // 
             // viewButton
             // 
             viewButton.Enabled = false;
-            viewButton.Location = new Point(130, 49);
+            viewButton.Location = new Point(12, 52);
             viewButton.Name = "viewButton";
             viewButton.Size = new Size(112, 34);
             viewButton.TabIndex = 1;
@@ -69,10 +73,12 @@
             // 
             // pathBox
             // 
-            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            pathBox.Location = new Point(12, 12);
+            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pathBox.BorderStyle = BorderStyle.FixedSingle;
+            pathBox.Location = new Point(130, 12);
             pathBox.Name = "pathBox";
-            pathBox.Size = new Size(702, 31);
+            pathBox.ReadOnly = true;
+            pathBox.Size = new Size(584, 34);
             pathBox.TabIndex = 2;
             // 
             // resourceList
@@ -88,7 +94,7 @@
             resourceList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, Size, DataSize, Format });
             resourceList.EditMode = DataGridViewEditMode.EditProgrammatically;
-            resourceList.Location = new Point(12, 249);
+            resourceList.Location = new Point(12, 292);
             resourceList.MultiSelect = false;
             resourceList.Name = "resourceList";
             resourceList.ReadOnly = true;
@@ -157,7 +163,7 @@
             // 
             infoBox.FormattingEnabled = true;
             infoBox.HorizontalScrollbar = true;
-            infoBox.Location = new Point(12, 89);
+            infoBox.Location = new Point(12, 132);
             infoBox.Name = "infoBox";
             infoBox.Size = new Size(348, 154);
             infoBox.TabIndex = 4;
@@ -166,7 +172,7 @@
             // 
             exportDataButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             exportDataButton.Enabled = false;
-            exportDataButton.Location = new Point(543, 49);
+            exportDataButton.Location = new Point(543, 92);
             exportDataButton.Name = "exportDataButton";
             exportDataButton.Size = new Size(171, 34);
             exportDataButton.TabIndex = 5;
@@ -177,7 +183,7 @@
             // searchButton
             // 
             searchButton.Enabled = false;
-            searchButton.Location = new Point(248, 49);
+            searchButton.Location = new Point(366, 52);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(112, 34);
             searchButton.TabIndex = 6;
@@ -190,30 +196,77 @@
             resultsBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             resultsBox.FormattingEnabled = true;
             resultsBox.HorizontalScrollbar = true;
-            resultsBox.Location = new Point(366, 89);
+            resultsBox.Location = new Point(366, 132);
             resultsBox.Name = "resultsBox";
             resultsBox.Size = new Size(348, 154);
             resultsBox.TabIndex = 7;
             // 
-            // saveButton
+            // exportSelectedButton
             // 
-            saveButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            saveButton.Enabled = false;
-            saveButton.Location = new Point(366, 49);
-            saveButton.Name = "saveButton";
-            saveButton.Size = new Size(171, 34);
-            saveButton.TabIndex = 8;
-            saveButton.Text = "Export Selected";
-            saveButton.UseVisualStyleBackColor = true;
-            saveButton.Click += saveButton_Click;
+            exportSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            exportSelectedButton.Enabled = false;
+            exportSelectedButton.Location = new Point(366, 92);
+            exportSelectedButton.Name = "exportSelectedButton";
+            exportSelectedButton.Size = new Size(171, 34);
+            exportSelectedButton.TabIndex = 8;
+            exportSelectedButton.Text = "Export Selected";
+            exportSelectedButton.UseVisualStyleBackColor = true;
+            exportSelectedButton.Click += exportSelectedButton_Click;
+            // 
+            // checksumButton
+            // 
+            checksumButton.Location = new Point(12, 92);
+            checksumButton.Name = "checksumButton";
+            checksumButton.Size = new Size(230, 34);
+            checksumButton.TabIndex = 9;
+            checksumButton.Text = "Calculate Checksum";
+            checksumButton.UseVisualStyleBackColor = true;
+            checksumButton.Click += checksumButton_Click;
+            // 
+            // replaceButton
+            // 
+            replaceButton.Enabled = false;
+            replaceButton.Location = new Point(484, 52);
+            replaceButton.Name = "replaceButton";
+            replaceButton.Size = new Size(112, 34);
+            replaceButton.TabIndex = 10;
+            replaceButton.Text = "Replace";
+            replaceButton.UseVisualStyleBackColor = true;
+            replaceButton.Click += replaceButton_Click;
+            // 
+            // viewRawButton
+            // 
+            viewRawButton.Enabled = false;
+            viewRawButton.Location = new Point(130, 52);
+            viewRawButton.Name = "viewRawButton";
+            viewRawButton.Size = new Size(112, 34);
+            viewRawButton.TabIndex = 11;
+            viewRawButton.Text = "View Raw";
+            viewRawButton.UseVisualStyleBackColor = true;
+            viewRawButton.Click += viewRawButton_Click;
+            // 
+            // saveFileButton
+            // 
+            saveFileButton.Enabled = false;
+            saveFileButton.Location = new Point(602, 52);
+            saveFileButton.Name = "saveFileButton";
+            saveFileButton.Size = new Size(112, 34);
+            saveFileButton.TabIndex = 12;
+            saveFileButton.Text = "Save File";
+            saveFileButton.UseVisualStyleBackColor = true;
+            saveFileButton.Click += saveFileButton_Click;
             // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(726, 861);
-            Controls.Add(saveButton);
+            ClientSize = new Size(726, 904);
+            Controls.Add(saveFileButton);
+            Controls.Add(viewRawButton);
+            Controls.Add(replaceButton);
+            Controls.Add(checksumButton);
+            Controls.Add(exportSelectedButton);
             Controls.Add(resultsBox);
             Controls.Add(searchButton);
             Controls.Add(exportDataButton);
@@ -221,19 +274,18 @@
             Controls.Add(resourceList);
             Controls.Add(pathBox);
             Controls.Add(viewButton);
-            Controls.Add(loadButton);
+            Controls.Add(openFileButton);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "MainWindow";
             Text = "Big Viewer";
             ((System.ComponentModel.ISupportInitialize)resourceList).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private Button loadButton;
+        private Button openFileButton;
         private Button viewButton;
         private TextBox pathBox;
         private DataGridView resourceList;
@@ -241,12 +293,16 @@
         private Button exportDataButton;
         private Button searchButton;
         private ListBox resultsBox;
-        private Button saveButton;
+        private Button exportSelectedButton;
         private DataGridViewTextBoxColumn ItemNumber;
         private DataGridViewTextBoxColumn Type;
         private DataGridViewTextBoxColumn Offset;
         private DataGridViewTextBoxColumn Size;
         private DataGridViewTextBoxColumn DataSize;
         private DataGridViewTextBoxColumn Format;
+        private Button checksumButton;
+        private Button replaceButton;
+        private Button viewRawButton;
+        private Button saveFileButton;
     }
 }

@@ -53,15 +53,16 @@
                 for (int i = 0; i < resourceCount; i++)
                 {
                     var num = tableStart + (i * 8);
-                    testList.Add(BitConverter.ToUInt32(totalData[checked((int)(num + 0x4))..checked((int)(num + 0x8))]));
-                    sortList.Add(BitConverter.ToUInt32(totalData[checked((int)(num + 0x4))..checked((int)(num + 0x8))]));
+                    uint offset = BitConverter.ToUInt32(totalData[checked((int)(num + 0x4))..checked((int)(num + 0x8))]);
+                    testList.Add(offset);
+                    sortList.Add(offset);
                 }
                 sortList.Sort();
                 if (!sortList.SequenceEqual(testList))
                 {
                     testList = [];
                     sortList = [];
-                    throw new ArgumentException("TOC is not ordered! Abandoning.");
+                    throw new ArgumentException("TOC is not ordered!");
                 }
                 else
                 {
@@ -79,7 +80,7 @@
                     resources.Add(new Resource(
                         _id: i,
                         _type: totalData[checked((int)num)..checked((int)(num + 0x4))],
-                        _offset: BitConverter.ToUInt32(totalData[checked((int)(num + 0x4))..checked((int)(num + 0x8))]),
+                        _offset: offset,
                         _data: totalData[checked((int)offset)..checked((int)offsetNext)]
                     ));
                 }
@@ -93,7 +94,7 @@
         public void ReplaceResource(int id, byte[] newRawData)
         {
             uint oldSize = resources[id].size;
-            resources[id].data = Resource.EncodeResource(newRawData, resources[id].format);
+            resources[id].data = Utils.EncodeResource(newRawData, resources[id].format);
             resources[id].rawData = newRawData;
             resources[id].size = checked((uint)resources[id].data.Length);
             resources[id].rawSize = checked((uint)newRawData.Length);
@@ -147,7 +148,7 @@
 
             // Construct TOC ending
             result.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 });
-            result.AddRange(BitConverter.GetBytes(headerSize + contentSize + ((resourceCount + 1) * 8)));
+            result.AddRange(BitConverter.GetBytes(checked((uint)(headerBytes.Length + contentSize + ((resourceCount + 1) * 8)))));
 
             // Construct data
             foreach (Resource res in resources)

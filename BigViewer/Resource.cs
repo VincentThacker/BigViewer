@@ -1,6 +1,5 @@
 ﻿using NAudio.Vorbis;
 using NAudio.Wave;
-using System.IO.Compression;
 using System.Media;
 
 namespace BigViewer
@@ -9,8 +8,10 @@ namespace BigViewer
     {
         public int id;
         public byte[] type;
+        public string typeName;
         public uint offset;
         public uint format;
+        public string formatName;
         public uint size;
         public uint rawSize;
         public byte[] data;
@@ -20,49 +21,16 @@ namespace BigViewer
         {
             id = _id;
             type = _type;
-            // typeName = GetTypeName(_type);
+            typeName = Utils.GetTypeName(_type);
             offset = _offset;
             data = _data;
             size = checked((uint)_data.Length);
-            (format, rawData) = DecodeResource(data);
+            (format, rawData) = Utils.DecodeResource(data);
+            formatName = Utils.GetFormatName(format);
             rawSize = checked((uint)rawData.Length);
         }
 
-        public static string GetTypeName(byte[] type)
-        {
-            switch (type)
-            {
-                case [0x23, 0x22, 0xE0, 0xF4]:
-                    return "data";
-                case [0x78, 0x86, 0x17, 0xB7]:
-                    return "png";
-                case [0x54, 0x77, 0x8A, 0xFD]:
-                    return "wav";
-                case [0x52, 0x49, 0x46, 0x46]:
-                    return "ogg";
-                case [0x05, 0xC5, 0xE4, 0x69]:
-                    return "[start]";
-                case [0xDC, 0xAA, 0x86, 0xF6]:
-                    return "[end]";
-                default:
-                    return BitConverter.ToString(type);
-            }
-        }
-
-        public static string GetFormatName(uint format)
-        {
-            switch (format)
-            {
-                case 1:
-                    return "none";
-                case 2:
-                    return "zlib";
-                default:
-                    return "unknown";
-            }
-        }
-
-        public void Display()
+        public void DisplayRaw()
         {
             switch (type)
             {
@@ -73,7 +41,7 @@ namespace BigViewer
                         if (rawData[0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
                         {
                             Form imageView = new Form();
-                            imageView.MinimumSize = System.Drawing.Size.Empty;
+                            imageView.MinimumSize = Size.Empty;
                             imageView.AutoSize = true;
                             imageView.MaximizeBox = false;
                             imageView.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -147,85 +115,18 @@ namespace BigViewer
             }
         }
 
-        public static MemoryStream DecompZlibData(byte[] data)
+        public void Display()
         {
-            MemoryStream result = new MemoryStream();
             try
             {
-                new ZLibStream(new MemoryStream(data), CompressionMode.Decompress).CopyTo(result);
-                result.Position = 0;
+                HexView datView = new HexView(data);
+                datView.Text = id.ToString();
+                datView.Show();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
             }
-            return result;
         }
-
-        public static MemoryStream CompZlibData(byte[] data)
-        {
-            MemoryStream result = new MemoryStream();
-            try
-            {
-                new ZLibStream(new MemoryStream(data), CompressionLevel.SmallestSize).CopyTo(result);
-                result.Position = 0;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
-            }
-            return result;
-        }
-
-        public static (uint, byte[]) DecodeResource(byte[] data)
-        {
-            // Check compression type
-            if (data.Length > 0x4 && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x00, 0x00 }))
-            {
-                // none
-                return (1, data[0x4..]);
-            }
-            else if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x80, 0x00 }) && data[0xC..0xE].SequenceEqual(new byte[] { 0x78, 0xDA }) && BitConverter.ToUInt32(data[0x8..0xC]) == data.Length - 0xC)
-            {
-                // zlib
-                return (2, DecompZlibData(data[0xC..]).ToArray());
-            }
-            else
-            {
-                // Default
-                return (0, data);
-            }
-        }
-
-        public static byte[] EncodeResource(byte[] rawData, uint format)
-        {
-            switch (format)
-            {
-                case 1:
-                    // none
-                    return (new byte[] { 0x04, 0x00, 0x00, 0x00 }).Concat(rawData).ToArray();
-                case 2:
-                    // zlib
-                    List<byte> result = [];
-                    result.AddRange(new byte[] { 0x04, 0x00, 0x80, 0x00 });
-                    result.AddRange(BitConverter.GetBytes(rawData.Length));
-                    byte[] data = CompZlibData(rawData).ToArray();
-                    result.AddRange(BitConverter.GetBytes(data.Length));
-                    result.AddRange(data);
-                    return result.ToArray();
-                default:
-                    return rawData;
-            }
-        }
-
-        /*
-        public void UpdateData(byte[] newRawData)
-        {
-            data = EncodeResource(newRawData, format);
-            rawData = newRawData;
-            size = checked((uint)data.Length);
-            rawSize = checked((uint)newRawData.Length);
-        }
-        */
     }
 }
