@@ -9,35 +9,23 @@ namespace BigViewer
     {
         public int id;
         public byte[] type;
-        public string typeName;
         public uint offset;
         public uint format;
-        public string formatName;
         public uint size;
         public uint rawSize;
         public byte[] data;
         public byte[] rawData;
 
-        public static Dictionary<uint, string> formatNames = new Dictionary<uint, string> {
-            {1, "none"},
-            {2, "zlib"},
-            {0, "unknown"}
-        };
-
         public Resource(int _id, byte[] _type, uint _offset, byte[] _data)
         {
             id = _id;
             type = _type;
-            typeName = GetTypeName(_type);
+            // typeName = GetTypeName(_type);
             offset = _offset;
             data = _data;
             size = checked((uint)_data.Length);
             (format, rawData) = DecodeResource(data);
             rawSize = checked((uint)rawData.Length);
-            if (!formatNames.TryGetValue(format, out formatName))
-            {
-                formatName = "invalid";
-            }
         }
 
         public static string GetTypeName(byte[] type)
@@ -58,6 +46,19 @@ namespace BigViewer
                     return "[end]";
                 default:
                     return BitConverter.ToString(type);
+            }
+        }
+
+        public static string GetFormatName(uint format)
+        {
+            switch (format)
+            {
+                case 1:
+                    return "none";
+                case 2:
+                    return "zlib";
+                default:
+                    return "unknown";
             }
         }
 
@@ -217,17 +218,14 @@ namespace BigViewer
             }
         }
 
-        public void UpdateData(byte[] newRawData, byte[]? newType)
+        /*
+        public void UpdateData(byte[] newRawData)
         {
-            rawData = newRawData;
-            rawSize = checked((uint)newRawData.Length);
             data = EncodeResource(newRawData, format);
+            rawData = newRawData;
             size = checked((uint)data.Length);
-            if (newType != null)
-            {
-                type = newType;
-                typeName = GetTypeName(newType);
-            }
+            rawSize = checked((uint)newRawData.Length);
         }
+        */
     }
 }

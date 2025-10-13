@@ -1,6 +1,5 @@
 using Microsoft.VisualBasic;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Text.RegularExpressions;
 
 namespace BigViewer
@@ -26,21 +25,8 @@ namespace BigViewer
                     currentFile = new ResourceFile(pathBox.Text, File.ReadAllBytes(pathBox.Text));
                     validPath = pathBox.Text;
 
-                    // Display file info
-                    infoBox.Items.Add("Header size: " + "0x" + currentFile.headerSize.ToString("X"));
-                    infoBox.Items.Add("TOC start: " + "0x" + currentFile.tableStart.ToString("X"));
-                    infoBox.Items.Add("Resource count: " + currentFile.resourceCount.ToString());
-                    infoBox.Items.Add("Content start: " + "0x" + currentFile.tableEnd.ToString("X"));
-                    infoBox.Items.Add("Clean size: " + currentFile.contentSize.ToString());
-                    infoBox.Items.Add("TOC end: " + "0x" + currentFile.firstResourceOffset.ToString("X"));
+                    DisplayInfo();
 
-                    // Populate DataGridView using masterList
-                    foreach (Resource res in currentFile.resources)
-                    {
-                        resourceList.Rows.Add(res.id.ToString(), res.typeName, "0x" + res.offset.ToString("X"), "0x" + res.size.ToString("X"), "0x" + res.rawSize.ToString("X"), res.formatName);
-                    }
-                    resourceList.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
-                    resourceList.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
                     viewButton.Enabled = true;
                     saveButton.Enabled = true;
                     searchButton.Enabled = true;
@@ -109,7 +95,7 @@ namespace BigViewer
             if ((new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$")).IsMatch(input))
             {
                 resultsBox.Items.Clear();
-                byte[] pattern = GetBytes(input);
+                byte[] pattern = ConvertStringToBytes(input);
                 foreach (Resource res in currentFile.resources)
                 {
                     int[] resu = FindSequence(res.rawData, pattern);
@@ -139,6 +125,28 @@ namespace BigViewer
             SaveDataToFile(dat, "Data (*.bin)|*.bin", "_alldata");
         }
 
+        public void DisplayInfo()
+        {
+            infoBox.Items.Clear();
+            resultsBox.Items.Clear();
+            resourceList.Rows.Clear();
+            // Display file info
+            infoBox.Items.Add("Header size: " + "0x" + currentFile.headerSize.ToString("X"));
+            infoBox.Items.Add("TOC start: " + "0x" + currentFile.tableStart.ToString("X"));
+            infoBox.Items.Add("Resource count: " + currentFile.resourceCount.ToString());
+            infoBox.Items.Add("Content start: " + "0x" + currentFile.tableEnd.ToString("X"));
+            infoBox.Items.Add("Clean size: " + currentFile.contentSize.ToString());
+            infoBox.Items.Add("TOC end: " + "0x" + currentFile.firstResourceOffset.ToString("X"));
+
+            // Populate DataGridView using resource list
+            foreach (Resource res in currentFile.resources)
+            {
+                resourceList.Rows.Add(res.id.ToString(), Resource.GetTypeName(res.type), "0x" + res.offset.ToString("X"), "0x" + res.size.ToString("X"), "0x" + res.rawSize.ToString("X"), Resource.GetFormatName(res.format));
+            }
+            resourceList.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+            resourceList.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
+        }
+
         void Reset()
         {
             validPath = "";
@@ -153,12 +161,12 @@ namespace BigViewer
             exportDataButton.Enabled = false;
         }
 
-        byte[] GetBytes(string input)
+        public static byte[] ConvertStringToBytes(string input)
         {
-            return input.Split('-').Select((s) => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToArray();
+            return input.Split('-').Select((x) => byte.Parse(x, System.Globalization.NumberStyles.HexNumber)).ToArray();
         }
 
-        int[] FindSequence(byte[] data, byte[] pattern)
+        public static int[] FindSequence(byte[] data, byte[] pattern)
         {
             List<int> matchesList = [];
             for (int i = 0; i + pattern.Length <= data.Length; i++)
@@ -180,7 +188,7 @@ namespace BigViewer
             return matchesList.ToArray();
         }
 
-        void SaveDataToFile(byte[] dataToSave, string filter, string fileNameAppend)
+        public void SaveDataToFile(byte[] dataToSave, string filter, string fileNameAppend)
         {
             SaveFileDialog saveDialog = new SaveFileDialog();
             saveDialog.InitialDirectory = Path.GetDirectoryName(validPath);
@@ -198,7 +206,7 @@ namespace BigViewer
             }
         }
 
-        void SaveDataToFile(List<byte> dataToSave, string filter, string fileNameAppend)
+        public void SaveDataToFile(List<byte> dataToSave, string filter, string fileNameAppend)
         {
             SaveFileDialog saveDialog = new SaveFileDialog();
             saveDialog.InitialDirectory = Path.GetDirectoryName(validPath);

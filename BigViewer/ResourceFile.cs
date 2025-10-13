@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace BigViewer
+﻿namespace BigViewer
 {
     internal class ResourceFile
     {
@@ -63,7 +61,6 @@ namespace BigViewer
                 {
                     testList = [];
                     sortList = [];
-                    Reset();
                     throw new ArgumentException("TOC is not ordered! Abandoning.");
                 }
                 else
@@ -93,41 +90,72 @@ namespace BigViewer
             }
         }
 
-        public void Reset()
-        {
-            // active = false;
-            filePath = "";
-            headerSize = 0;
-            resourceCount = 0;
-            tableStart = 0;
-            tableEnd = 0;
-            contentSize = 0;
-            firstResourceOffset = 0;
-            headerBytes = [];
-            resources = [];
-            GC.Collect();
-        }
-
-        public void ReplaceResource(int id, byte[] newRawData, byte[]? newType)
+        public void ReplaceResource(int id, byte[] newRawData)
         {
             uint oldSize = resources[id].size;
-            resources[id].UpdateData(newRawData, newType);
+            resources[id].data = Resource.EncodeResource(newRawData, resources[id].format);
+            resources[id].rawData = newRawData;
+            resources[id].size = checked((uint)resources[id].data.Length);
+            resources[id].rawSize = checked((uint)newRawData.Length);
             uint newSize = resources[id].size;
 
             if (newSize > oldSize)
             {
+                // Update subsequent offsets
                 for (int i = id + 1; i < resourceCount; i++)
                 {
                     resources[i].offset += (newSize - oldSize);
                 }
+                // Update contentSize
+                contentSize += (newSize - oldSize);
+                byte[] contentSizeBytes = BitConverter.GetBytes(contentSize);
+                headerBytes[0x1C] = contentSizeBytes[0];
+                headerBytes[0x1D] = contentSizeBytes[1];
+                headerBytes[0x1E] = contentSizeBytes[2];
+                headerBytes[0x1F] = contentSizeBytes[3];
             }
             else if (oldSize > newSize)
             {
+                // Update subsequent offsets
                 for (int i = id + 1; i < resourceCount; i++)
                 {
                     resources[i].offset -= (oldSize - newSize);
                 }
+                // Update contentSize
+                contentSize -= (oldSize - newSize);
+                byte[] contentSizeBytes = BitConverter.GetBytes(contentSize);
+                headerBytes[0x1C] = contentSizeBytes[0];
+                headerBytes[0x1D] = contentSizeBytes[1];
+                headerBytes[0x1E] = contentSizeBytes[2];
+                headerBytes[0x1F] = contentSizeBytes[3];
             }
+        }
+
+        public byte[] ConstructFile()
+        {
+            List<byte> result = [];
+
+            // Construct header
+            result.AddRange(headerBytes);
+
+            // Construct TOC
+            foreach (Resource res in resources)
+            {
+                result.AddRange(res.type);
+                result.AddRange(BitConverter.GetBytes(res.offset));
+            }
+
+            // Construct TOC ending
+            result.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 });
+            result.AddRange(BitConverter.GetBytes(headerSize + contentSize + ((resourceCount + 1) * 8)));
+
+            // Construct data
+            foreach (Resource res in resources)
+            {
+                result.AddRange(res.data);
+            }
+
+            return result.ToArray();
         }
     }
 }
