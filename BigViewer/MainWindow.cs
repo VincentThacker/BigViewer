@@ -62,7 +62,7 @@ namespace BigViewer
                 if (resourceList.SelectedRows.Count == 1)
                 {
                     Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
-                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI);
+                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI, this);
                 }
                 else
                 {

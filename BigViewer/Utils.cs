@@ -3,6 +3,7 @@ using NAudio.Wave;
 using System.IO.Compression;
 using System.Media;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace BigViewer
 {
@@ -269,7 +270,7 @@ namespace BigViewer
             }
         }
 
-        public static void DisplayEditRaw(byte[] rawData, byte[] type, string title, ResourceFile parentResourceFile, int resId, Action act)
+        public static void DisplayEditRaw(byte[] rawData, byte[] type, string title, ResourceFile parentResourceFile, int resId, Action act, Form parentForm)
         {
             // parentResourceFile and resId is for updating parent resource file.
             // Action is for updating DataGridView of parent Form.
@@ -279,7 +280,7 @@ namespace BigViewer
                     try
                     {
                         LittleEditor littleEditor = new LittleEditor(rawData, title, parentResourceFile, resId, act);
-                        littleEditor.Show();
+                        littleEditor.Show(parentForm);
                     }
                     catch (Exception ex)
                     {
@@ -290,7 +291,7 @@ namespace BigViewer
                     try
                     {
                         HexEditor datView = new HexEditor(rawData, title, parentResourceFile, resId, act);
-                        datView.Show();
+                        datView.Show(parentForm);
                     }
                     catch (Exception ex)
                     {
@@ -300,7 +301,7 @@ namespace BigViewer
             }
         }
 
-        public static void DisplayEditRaw(byte[] rawData, byte[] type, string title, LittleResourceFile parentLittleResourceFile, int resId, Action act)
+        public static void DisplayEditRaw(byte[] rawData, byte[] type, string title, LittleResourceFile parentLittleResourceFile, int resId, Action act, Form parentForm)
         {
             // parentResourceFile and resId is for updating parent little resource file.
             // Action is for updating DataGridView of parent Form.
@@ -310,7 +311,7 @@ namespace BigViewer
                     try
                     {
                         LittleEditor littleEditor = new LittleEditor(rawData, title, parentLittleResourceFile, resId, act);
-                        littleEditor.Show();
+                        littleEditor.Show(parentForm);
                     }
                     catch (Exception ex)
                     {
@@ -321,7 +322,7 @@ namespace BigViewer
                     try
                     {
                         HexEditor datView = new HexEditor(rawData, title, parentLittleResourceFile, resId, act);
-                        datView.Show();
+                        datView.Show(parentForm);
                     }
                     catch (Exception ex)
                     {

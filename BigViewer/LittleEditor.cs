@@ -12,32 +12,25 @@
         public LittleEditor(byte[] data, string title, ResourceFile _parentResourceFile, int _id, Action _action)
         {
             InitializeComponent();
-            try
-            {
-                Reset();
 
-                parentResourceFile = _parentResourceFile;
-                parentLittleResourceFile = null;
-                idInParent = _id;
-                action = _action;
-                this.Text = title;
+            Reset();
 
-                currentLittleFile = new LittleResourceFile(data);
+            parentResourceFile = _parentResourceFile;
+            parentLittleResourceFile = null;
+            idInParent = _id;
+            action = _action;
+            this.Text = title;
 
-                DisplayInfoUI();
+            currentLittleFile = new LittleResourceFile(data);
 
-                editRawButton.Enabled = true;
-                viewRawButton.Enabled = true;
-                exportSelectedButton.Enabled = true;
-                saveButton.Enabled = true;
-                searchButton.Enabled = true;
-                replaceButton.Enabled = true;
-            }
-            catch (Exception ex)
-            {
-                Reset();
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
-            }
+            DisplayInfoUI();
+
+            editRawButton.Enabled = true;
+            viewRawButton.Enabled = true;
+            exportSelectedButton.Enabled = true;
+            saveButton.Enabled = true;
+            searchButton.Enabled = true;
+            replaceButton.Enabled = true;
         }
 
 
@@ -45,33 +38,26 @@
         public LittleEditor(byte[] data, string title, LittleResourceFile _parentLittleResourceFile, int _id, Action _action)
         {
             InitializeComponent();
-            try
-            {
-                Reset();
 
-                parentResourceFile = null;
-                parentLittleResourceFile = _parentLittleResourceFile;
+            Reset();
 
-                idInParent = _id;
-                action = _action;
-                this.Text = title;
+            parentResourceFile = null;
+            parentLittleResourceFile = _parentLittleResourceFile;
 
-                currentLittleFile = new LittleResourceFile(data);
+            idInParent = _id;
+            action = _action;
+            this.Text = title;
 
-                DisplayInfoUI();
+            currentLittleFile = new LittleResourceFile(data);
 
-                editRawButton.Enabled = true;
-                viewRawButton.Enabled = true;
-                exportSelectedButton.Enabled = true;
-                saveButton.Enabled = true;
-                searchButton.Enabled = true;
-                replaceButton.Enabled = true;
-            }
-            catch (Exception ex)
-            {
-                Reset();
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
-            }
+            DisplayInfoUI();
+
+            editRawButton.Enabled = true;
+            viewRawButton.Enabled = true;
+            exportSelectedButton.Enabled = true;
+            saveButton.Enabled = true;
+            searchButton.Enabled = true;
+            replaceButton.Enabled = true;
         }
 
         private void viewRawButton_Click(object sender, EventArgs e)
@@ -97,7 +83,7 @@
                 if (resourceList.SelectedRows.Count == 1)
                 {
                     Resource res = currentLittleFile.resources[resourceList.SelectedRows[0].Index];
-                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString(), currentLittleFile, res.id, DisplayInfoUI);
+                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString(), currentLittleFile, res.id, DisplayInfoUI, this);
                 }
                 else
                 {
@@ -161,7 +147,5 @@
             searchButton.Enabled = false;
             replaceButton.Enabled = false;
         }
-
-
     }
 }
