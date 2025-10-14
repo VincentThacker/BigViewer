@@ -332,7 +332,7 @@ namespace BigViewer
             }
         }
 
-        public static void DisplayRaw(byte[] rawData, byte[] type, string title)
+        public static void DisplayRaw(byte[] rawData, byte[] type, string title, int resId, Form parentForm)
         {
             switch (type)
             {
@@ -343,6 +343,7 @@ namespace BigViewer
                         if (rawData[0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
                         {
                             Form imageView = new Form();
+                            imageView.Tag = resId;
                             imageView.MinimumSize = Size.Empty;
                             imageView.AutoSize = true;
                             imageView.MaximizeBox = false;
@@ -352,7 +353,7 @@ namespace BigViewer
                             imageBox.Image = Image.FromStream(new MemoryStream(rawData));
                             imageBox.SizeMode = PictureBoxSizeMode.AutoSize;
                             imageView.Controls.Add(imageBox);
-                            imageView.Show();
+                            imageView.Show(parentForm);
                         }
                         else
                         {
@@ -405,8 +406,8 @@ namespace BigViewer
                 default:
                     try
                     {
-                        HexEditor datView = new HexEditor(rawData, title);
-                        datView.Show();
+                        HexEditor datView = new HexEditor(rawData, title, resId);
+                        datView.Show(parentForm);
                     }
                     catch (Exception ex)
                     {
@@ -416,7 +417,7 @@ namespace BigViewer
             }
         }
 
-
+        /*
         public static void Display(byte[] data, string title)
         {
             try
@@ -430,5 +431,6 @@ namespace BigViewer
                 MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
             }
         }
+        */
     }
 }

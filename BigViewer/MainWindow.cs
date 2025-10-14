@@ -1,4 +1,5 @@
 using Microsoft.VisualBasic;
+using System.Diagnostics;
 
 namespace BigViewer
 {
@@ -15,6 +16,13 @@ namespace BigViewer
 
         private void openFileButton_Click(object sender, EventArgs e)
         {
+            for (int i = Application.OpenForms.Count - 1; i >= 0; i--)
+            {
+                if (Application.OpenForms[i] != this)
+                {
+                    Application.OpenForms[i].Close();
+                }
+            }
             string selectedPath = Utils.OpenFilePath("BIG files (*.big)|*.big|All files (*.*)|*.*");
             try
             {
@@ -45,8 +53,29 @@ namespace BigViewer
             {
                 if (resourceList.SelectedRows.Count == 1)
                 {
-                    Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
-                    Utils.DisplayRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text);
+                    int selectedIndex = resourceList.SelectedRows[0].Index;
+                    if (selectedIndex == currentFile.resources[selectedIndex].id)
+                    {
+                        bool alreadyOpen = false;
+                        foreach (Form childForm in this.OwnedForms)
+                        {
+                            if ((int)childForm.Tag == selectedIndex)
+                            {
+                                alreadyOpen = true;
+                                childForm.Focus();
+                                break;
+                            }
+                        }
+                        if (!alreadyOpen)
+                        {
+                            Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
+                            Utils.DisplayRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, res.id, this);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("List mismatch! Please relaunch.", "Error");
+                    }
                 }
                 else
                 {
@@ -61,8 +90,29 @@ namespace BigViewer
             {
                 if (resourceList.SelectedRows.Count == 1)
                 {
-                    Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
-                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI, this);
+                    int selectedIndex = resourceList.SelectedRows[0].Index;
+                    if (selectedIndex == currentFile.resources[selectedIndex].id)
+                    {
+                        bool alreadyOpen = false;
+                        foreach (Form childForm in this.OwnedForms)
+                        {
+                            if ((int)childForm.Tag == selectedIndex)
+                            {
+                                alreadyOpen = true;
+                                childForm.Focus();
+                                break;
+                            }
+                        }
+                        if (!alreadyOpen)
+                        {
+                            Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
+                            Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI, this);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("List mismatch! Please relaunch.", "Error");
+                    }                    
                 }
                 else
                 {

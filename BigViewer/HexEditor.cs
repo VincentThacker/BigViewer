@@ -18,6 +18,7 @@ namespace BigViewer
             parentLittleResourceFile = null;
             idInParent = _id;
             action = _action;
+            this.Tag = _id;
             this.Text = title;
             this.Width += SystemInformation.VerticalScrollBarWidth;
             byteProvider = new DynamicByteProvider(displayData);
@@ -36,6 +37,7 @@ namespace BigViewer
             parentLittleResourceFile = _parentLittleResourceFile;
             idInParent = _id;
             action = _action;
+            this.Tag = _id;
             this.Text = title;
             this.Width += SystemInformation.VerticalScrollBarWidth;
             byteProvider = new DynamicByteProvider(displayData);
@@ -47,14 +49,16 @@ namespace BigViewer
         }
 
         // View only
-        public HexEditor(byte[] displayData, string title)
+        public HexEditor(byte[] displayData, string title, int _id)
         {
             InitializeComponent();
             parentResourceFile = null;
             parentLittleResourceFile = null;
+            idInParent = _id;
             action = null;
             this.saveButton.Enabled = false;
             this.cancelButton.Enabled = false;
+            this.Tag = _id;
             this.Text = title;
             this.Width += SystemInformation.VerticalScrollBarWidth;
             byteProvider = new DynamicByteProvider(displayData);

@@ -19,6 +19,7 @@
             parentLittleResourceFile = null;
             idInParent = _id;
             action = _action;
+            this.Tag = _id;
             this.Text = title;
 
             currentLittleFile = new LittleResourceFile(data);
@@ -43,9 +44,9 @@
 
             parentResourceFile = null;
             parentLittleResourceFile = _parentLittleResourceFile;
-
             idInParent = _id;
             action = _action;
+            this.Tag = _id;
             this.Text = title;
 
             currentLittleFile = new LittleResourceFile(data);
@@ -66,8 +67,29 @@
             {
                 if (resourceList.SelectedRows.Count == 1)
                 {
-                    Resource res = currentLittleFile.resources[resourceList.SelectedRows[0].Index];
-                    Utils.DisplayRaw(res.rawData, res.type, res.id.ToString());
+                    int selectedIndex = resourceList.SelectedRows[0].Index;
+                    if (selectedIndex == currentLittleFile.resources[selectedIndex].id)
+                    {
+                        bool alreadyOpen = false;
+                        foreach (Form childForm in this.OwnedForms)
+                        {
+                            if ((int)childForm.Tag == selectedIndex)
+                            {
+                                alreadyOpen = true;
+                                childForm.Focus();
+                                break;
+                            }
+                        }
+                        if (!alreadyOpen)
+                        {
+                            Resource res = currentLittleFile.resources[resourceList.SelectedRows[0].Index];
+                            Utils.DisplayRaw(res.rawData, res.type, res.id.ToString() + " in " + idInParent.ToString(), res.id, this);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("List mismatch! Please relaunch.", "Error");
+                    }
                 }
                 else
                 {
@@ -82,8 +104,29 @@
             {
                 if (resourceList.SelectedRows.Count == 1)
                 {
-                    Resource res = currentLittleFile.resources[resourceList.SelectedRows[0].Index];
-                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString(), currentLittleFile, res.id, DisplayInfoUI, this);
+                    int selectedIndex = resourceList.SelectedRows[0].Index;
+                    if (selectedIndex == currentLittleFile.resources[selectedIndex].id)
+                    {
+                        bool alreadyOpen = false;
+                        foreach (Form childForm in this.OwnedForms)
+                        {
+                            if ((int)childForm.Tag == selectedIndex)
+                            {
+                                alreadyOpen = true;
+                                childForm.Focus();
+                                break;
+                            }
+                        }
+                        if (!alreadyOpen)
+                        {
+                            Resource res = currentLittleFile.resources[resourceList.SelectedRows[0].Index];
+                            Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + idInParent.ToString(), currentLittleFile, res.id, DisplayInfoUI, this);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("List mismatch! Please relaunch.", "Error");
+                    }
                 }
                 else
                 {
