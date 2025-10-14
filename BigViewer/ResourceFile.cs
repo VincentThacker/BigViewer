@@ -70,7 +70,7 @@
                     sortList = [];
                 }
 
-                // Read TOC, check for compression and save processed data
+                // Construct resource list
                 for (int i = 0; i < resourceCount; i++)
                 {
                     
@@ -91,7 +91,7 @@
             }
         }
 
-        public void ReplaceResource(int id, byte[] newRawData)
+        public void ReplaceResourceRaw(int id, byte[] newRawData)
         {
             uint oldSize = resources[id].size;
             resources[id].data = Utils.EncodeResource(newRawData, resources[id].format);
@@ -138,24 +138,20 @@
 
             // Construct header
             result.AddRange(headerBytes);
-
             // Construct TOC
             foreach (Resource res in resources)
             {
                 result.AddRange(res.type);
                 result.AddRange(BitConverter.GetBytes(res.offset));
             }
-
             // Construct TOC ending
             result.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00 });
             result.AddRange(BitConverter.GetBytes(checked((uint)(headerBytes.Length + contentSize + ((resourceCount + 1) * 8)))));
-
             // Construct data
             foreach (Resource res in resources)
             {
                 result.AddRange(res.data);
             }
-
             return result.ToArray();
         }
     }

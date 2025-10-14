@@ -1,12 +1,10 @@
 using Microsoft.VisualBasic;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace BigViewer
 {
     public partial class MainWindow : Form
     {
-        ResourceFile? currentFile;
+        internal ResourceFile? currentFile;
 
         public MainWindow()
         {
@@ -26,7 +24,7 @@ namespace BigViewer
 
                 DisplayInfoUI();
 
-                viewButton.Enabled = true;
+                editRawButton.Enabled = true;
                 viewRawButton.Enabled = true;
                 exportSelectedButton.Enabled = true;
                 exportDataButton.Enabled = true;
@@ -41,13 +39,14 @@ namespace BigViewer
             }
         }
 
-        private void viewButton_Click(object sender, EventArgs e)
+        private void viewRawButton_Click(object sender, EventArgs e)
         {
             if (currentFile != null)
             {
                 if (resourceList.SelectedRows.Count == 1)
                 {
-                    currentFile.resources[resourceList.SelectedRows[0].Index].Display();
+                    Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
+                    Utils.DisplayRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text);
                 }
                 else
                 {
@@ -56,13 +55,14 @@ namespace BigViewer
             }
         }
 
-        private void viewRawButton_Click(object sender, EventArgs e)
+        private void editRawButton_Click(object sender, EventArgs e)
         {
             if (currentFile != null)
             {
                 if (resourceList.SelectedRows.Count == 1)
                 {
-                    currentFile.resources[resourceList.SelectedRows[0].Index].DisplayRaw();
+                    Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
+                    Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI);
                 }
                 else
                 {
@@ -76,10 +76,10 @@ namespace BigViewer
             if (currentFile != null)
             {
                 string input = Interaction.InputBox("Enter sequence of bytes to search (separated by -)", "Search");
-                if ((new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$")).IsMatch(input))
+                byte[] pattern = Utils.ConvertStringToBytes(input);
+                if (pattern.Length > 0)
                 {
                     resultsBox.Items.Clear();
-                    byte[] pattern = Utils.ConvertStringToBytes(input);
                     foreach (Resource res in currentFile.resources)
                     {
                         int[] resu = Utils.FindSequence(res.rawData, pattern);
@@ -109,23 +109,7 @@ namespace BigViewer
                 if (resourceList.SelectedRows.Count == 1)
                 {
                     Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
-                    string filter;
-                    switch (res.type)
-                    {
-                        case [0x78, 0x86, 0x17, 0xB7]:
-                            filter = "PNG files (*.png)|*.png";
-                            break;
-                        case [0x54, 0x77, 0x8A, 0xFD]:
-                            filter = "WAV files (*.wav)|*.wav";
-                            break;
-                        case [0x52, 0x49, 0x46, 0x46]:
-                            filter = "OGG files (*.ogg)|*.ogg";
-                            break;
-                        default:
-                            filter = "Data (*.bin)|*.bin";
-                            break;
-                    }
-                    Utils.SaveDataToFile(res.rawData, filter, pathBox.Text, "_resource" + res.id.ToString());
+                    Utils.SaveDataToFile(res.rawData, Utils.GetFileTypeFilter(res.type), pathBox.Text, "_resource" + res.id.ToString());
                 }
                 else
                 {
@@ -179,7 +163,7 @@ namespace BigViewer
                     string selectedPath = Utils.OpenFilePath(Utils.GetFileTypeFilter(currentFile.resources[resourceList.SelectedRows[0].Index].type));
                     try
                     {
-                        currentFile.ReplaceResource(resourceList.SelectedRows[0].Index, File.ReadAllBytes(selectedPath));
+                        currentFile.ReplaceResourceRaw(resourceList.SelectedRows[0].Index, File.ReadAllBytes(selectedPath));
                         DisplayInfoUI();
                     }
                     catch (Exception ex)
@@ -227,7 +211,7 @@ namespace BigViewer
             resultsBox.Items.Clear();
             resourceList.Rows.Clear();
             GC.Collect();
-            viewButton.Enabled = false;
+            editRawButton.Enabled = false;
             viewRawButton.Enabled = false;
             exportSelectedButton.Enabled = false;
             exportDataButton.Enabled = false;

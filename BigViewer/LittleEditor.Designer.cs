@@ -1,6 +1,6 @@
 ﻿namespace BigViewer
 {
-    partial class MainWindow
+    partial class LittleEditor
     {
         /// <summary>
         /// Required designer variable.
@@ -23,14 +23,12 @@
         #region Windows Form Designer generated code
 
         /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
-            openFileButton = new Button();
             editRawButton = new Button();
-            pathBox = new TextBox();
             resourceList = new DataGridView();
             ItemNumber = new DataGridViewTextBoxColumn();
             Type = new DataGridViewTextBoxColumn();
@@ -39,47 +37,25 @@
             RawSize = new DataGridViewTextBoxColumn();
             Format = new DataGridViewTextBoxColumn();
             infoBox = new ListBox();
-            exportDataButton = new Button();
             searchButton = new Button();
             resultsBox = new ListBox();
             exportSelectedButton = new Button();
-            checksumButton = new Button();
             replaceButton = new Button();
             viewRawButton = new Button();
-            saveFileButton = new Button();
+            saveButton = new Button();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             SuspendLayout();
-            // 
-            // openFileButton
-            // 
-            openFileButton.Location = new Point(12, 12);
-            openFileButton.Name = "openFileButton";
-            openFileButton.Size = new Size(112, 34);
-            openFileButton.TabIndex = 0;
-            openFileButton.Text = "Open";
-            openFileButton.UseVisualStyleBackColor = true;
-            openFileButton.Click += openFileButton_Click;
             // 
             // editRawButton
             // 
             editRawButton.Enabled = false;
-            editRawButton.Location = new Point(130, 52);
+            editRawButton.Location = new Point(130, 12);
             editRawButton.Name = "editRawButton";
             editRawButton.Size = new Size(112, 34);
             editRawButton.TabIndex = 1;
             editRawButton.Text = "Edit Raw";
             editRawButton.UseVisualStyleBackColor = true;
             editRawButton.Click += editRawButton_Click;
-            // 
-            // pathBox
-            // 
-            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            pathBox.BorderStyle = BorderStyle.FixedSingle;
-            pathBox.Location = new Point(130, 12);
-            pathBox.Name = "pathBox";
-            pathBox.ReadOnly = true;
-            pathBox.Size = new Size(584, 31);
-            pathBox.TabIndex = 2;
             // 
             // resourceList
             // 
@@ -94,7 +70,7 @@
             resourceList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, FileSize, RawSize, Format });
             resourceList.EditMode = DataGridViewEditMode.EditProgrammatically;
-            resourceList.Location = new Point(12, 292);
+            resourceList.Location = new Point(12, 252);
             resourceList.MultiSelect = false;
             resourceList.Name = "resourceList";
             resourceList.ReadOnly = true;
@@ -163,40 +139,27 @@
             // 
             infoBox.FormattingEnabled = true;
             infoBox.HorizontalScrollbar = true;
-            infoBox.Location = new Point(12, 132);
+            infoBox.Location = new Point(12, 92);
             infoBox.Name = "infoBox";
             infoBox.Size = new Size(348, 154);
             infoBox.TabIndex = 4;
             // 
-            // exportDataButton
-            // 
-            exportDataButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            exportDataButton.Enabled = false;
-            exportDataButton.Location = new Point(543, 92);
-            exportDataButton.Name = "exportDataButton";
-            exportDataButton.Size = new Size(171, 34);
-            exportDataButton.TabIndex = 5;
-            exportDataButton.Text = "Export All Data";
-            exportDataButton.UseVisualStyleBackColor = true;
-            exportDataButton.Click += exportDataButton_Click;
-            // 
             // searchButton
             // 
             searchButton.Enabled = false;
-            searchButton.Location = new Point(366, 52);
+            searchButton.Location = new Point(248, 12);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(112, 34);
             searchButton.TabIndex = 6;
             searchButton.Text = "Search";
             searchButton.UseVisualStyleBackColor = true;
-            searchButton.Click += searchButton_Click;
             // 
             // resultsBox
             // 
             resultsBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             resultsBox.FormattingEnabled = true;
             resultsBox.HorizontalScrollbar = true;
-            resultsBox.Location = new Point(366, 132);
+            resultsBox.Location = new Point(366, 92);
             resultsBox.Name = "resultsBox";
             resultsBox.Size = new Size(348, 154);
             resultsBox.TabIndex = 7;
@@ -205,39 +168,27 @@
             // 
             exportSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             exportSelectedButton.Enabled = false;
-            exportSelectedButton.Location = new Point(366, 92);
+            exportSelectedButton.Location = new Point(12, 52);
             exportSelectedButton.Name = "exportSelectedButton";
             exportSelectedButton.Size = new Size(171, 34);
             exportSelectedButton.TabIndex = 8;
             exportSelectedButton.Text = "Export Selected";
             exportSelectedButton.UseVisualStyleBackColor = true;
-            exportSelectedButton.Click += exportSelectedButton_Click;
-            // 
-            // checksumButton
-            // 
-            checksumButton.Location = new Point(12, 92);
-            checksumButton.Name = "checksumButton";
-            checksumButton.Size = new Size(230, 34);
-            checksumButton.TabIndex = 9;
-            checksumButton.Text = "Calculate Checksum";
-            checksumButton.UseVisualStyleBackColor = true;
-            checksumButton.Click += checksumButton_Click;
             // 
             // replaceButton
             // 
             replaceButton.Enabled = false;
-            replaceButton.Location = new Point(484, 52);
+            replaceButton.Location = new Point(366, 12);
             replaceButton.Name = "replaceButton";
             replaceButton.Size = new Size(112, 34);
             replaceButton.TabIndex = 10;
             replaceButton.Text = "Replace";
             replaceButton.UseVisualStyleBackColor = true;
-            replaceButton.Click += replaceButton_Click;
             // 
             // viewRawButton
             // 
             viewRawButton.Enabled = false;
-            viewRawButton.Location = new Point(12, 52);
+            viewRawButton.Location = new Point(12, 12);
             viewRawButton.Name = "viewRawButton";
             viewRawButton.Size = new Size(112, 34);
             viewRawButton.TabIndex = 11;
@@ -245,60 +196,49 @@
             viewRawButton.UseVisualStyleBackColor = true;
             viewRawButton.Click += viewRawButton_Click;
             // 
-            // saveFileButton
+            // saveButton
             // 
-            saveFileButton.Enabled = false;
-            saveFileButton.Location = new Point(602, 52);
-            saveFileButton.Name = "saveFileButton";
-            saveFileButton.Size = new Size(112, 34);
-            saveFileButton.TabIndex = 12;
-            saveFileButton.Text = "Save File";
-            saveFileButton.UseVisualStyleBackColor = true;
-            saveFileButton.Click += saveFileButton_Click;
+            saveButton.Enabled = false;
+            saveButton.Location = new Point(602, 12);
+            saveButton.Name = "saveButton";
+            saveButton.Size = new Size(112, 34);
+            saveButton.TabIndex = 12;
+            saveButton.Text = "Save";
+            saveButton.UseVisualStyleBackColor = true;
+            saveButton.Click += saveButton_Click;
             // 
-            // MainWindow
+            // LittleEditor
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(726, 904);
-            Controls.Add(saveFileButton);
+            ClientSize = new Size(726, 864);
+            Controls.Add(saveButton);
             Controls.Add(viewRawButton);
             Controls.Add(replaceButton);
-            Controls.Add(checksumButton);
             Controls.Add(exportSelectedButton);
             Controls.Add(resultsBox);
             Controls.Add(searchButton);
-            Controls.Add(exportDataButton);
             Controls.Add(infoBox);
             Controls.Add(resourceList);
-            Controls.Add(pathBox);
             Controls.Add(editRawButton);
-            Controls.Add(openFileButton);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            Name = "MainWindow";
-            Text = "Big Viewer";
+            Name = "LittleEditor";
             ((System.ComponentModel.ISupportInitialize)resourceList).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
-
-        private Button openFileButton;
         private Button editRawButton;
-        private TextBox pathBox;
         private DataGridView resourceList;
         private ListBox infoBox;
-        private Button exportDataButton;
         private Button searchButton;
         private ListBox resultsBox;
         private Button exportSelectedButton;
-        private Button checksumButton;
         private Button replaceButton;
         private Button viewRawButton;
-        private Button saveFileButton;
+        private Button saveButton;
         private DataGridViewTextBoxColumn ItemNumber;
         private DataGridViewTextBoxColumn Type;
         private DataGridViewTextBoxColumn Offset;

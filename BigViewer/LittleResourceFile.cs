@@ -2,7 +2,7 @@
 {
     internal class LittleResourceFile
     {
-        public string filePath = "";
+        // public string filePath = "";
         // public static int resourceCountStart = 0x2;
         public int resourceCount = 0;
         public static ushort offsetTableStart = 0x6;
@@ -15,11 +15,11 @@
         public byte[] headerBytes2;
         public List<Resource> resources = [];
 
-        public LittleResourceFile(string _filePath, byte[] totalData)
+        public LittleResourceFile(byte[] totalData)
         {
             if (totalData[0x0] == 0x00)
             {
-                filePath = _filePath;
+                // filePath = _filePath;
                 totalSize = totalData.Length;
                 resourceCount = BitConverter.ToUInt16(totalData[0x2..0x4]);
                 offsetTableEnd = offsetTableStart + (resourceCount * 2);
@@ -65,7 +65,7 @@
                     sortList = [];
                 }
 
-                // Read TOC, check for compression and save processed data
+                // Construct resource list
                 for (int i = 0; i < resourceCount; i++)
                 {
                     
@@ -87,31 +87,39 @@
             }
         }
 
-        public void ReplaceResource(int id, byte[] newRawData)
+        public void ReplaceResourceRaw(int id, byte[] newRawData)
         {
-            uint oldSize = resources[id].size;
-            resources[id].data = Utils.EncodeResource(newRawData, resources[id].format);
-            resources[id].rawData = newRawData;
-            resources[id].size = checked((uint)resources[id].data.Length);
-            resources[id].rawSize = checked((uint)newRawData.Length);
-            uint newSize = resources[id].size;
-
-            if (newSize > oldSize)
+            if (newRawData.Length < 0xFFFF)
             {
-                // Update subsequent offsets
-                for (int i = id + 1; i < resourceCount; i++)
+                uint oldSize = resources[id].size;
+                resources[id].data = Utils.EncodeResource(newRawData, resources[id].format);
+                resources[id].rawData = newRawData;
+                resources[id].size = checked((uint)resources[id].data.Length);
+                resources[id].rawSize = checked((uint)newRawData.Length);
+                uint newSize = resources[id].size;
+
+                if (newSize > oldSize)
                 {
-                    resources[i].offset += (newSize - oldSize);
+                    // Update subsequent offsets
+                    for (int i = id + 1; i < resourceCount; i++)
+                    {
+                        resources[i].offset += (newSize - oldSize);
+                    }
+                    totalSize += checked((int)(newSize - oldSize));
+                }
+                else if (oldSize > newSize)
+                {
+                    // Update subsequent offsets
+                    for (int i = id + 1; i < resourceCount; i++)
+                    {
+                        resources[i].offset -= (oldSize - newSize);
+                    }
+                    totalSize -= checked((int)(oldSize - newSize));
                 }
             }
-            else if (oldSize > newSize)
+            else
             {
-                // Update subsequent offsets
-                for (int i = id + 1; i < resourceCount; i++)
-                {
-                    resources[i].offset -= (oldSize - newSize);
-                }
-                // Update contentSize
+                throw new ArgumentException("File size too large!");
             }
         }
 
@@ -123,29 +131,24 @@
             result.AddRange(headerBytes1);
             result.AddRange(BitConverter.GetBytes(checked((ushort)resourceCount)));
             result.AddRange(headerBytes2);
-
             // Construct offset table
             foreach (Resource res in resources)
             {
                 result.AddRange(BitConverter.GetBytes(checked((ushort)res.offset)));
             }
-
             // Construct offset table ending
             result.AddRange(BitConverter.GetBytes(checked((ushort)totalSize)));
             result.AddRange(new byte[] { 0x00, 0x00 });
-
             // Construct type table
             foreach (Resource res in resources)
             {
                 result.AddRange(res.type);
             }
-
             // Construct data
             foreach (Resource res in resources)
             {
                 result.AddRange(res.data);
             }
-
             return result.ToArray();
         }
     }

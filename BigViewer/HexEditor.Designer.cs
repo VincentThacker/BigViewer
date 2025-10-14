@@ -2,7 +2,7 @@
 
 namespace BigViewer
 {
-    partial class HexView
+    partial class HexEditor
     {
         /// <summary>
         /// Required designer variable.
@@ -31,6 +31,8 @@ namespace BigViewer
         private void InitializeComponent()
         {
             hexBox = new HexBox();
+            saveButton = new Button();
+            cancelButton = new Button();
             SuspendLayout();
             // 
             // hexBox
@@ -43,26 +45,51 @@ namespace BigViewer
             hexBox.Location = new Point(12, 12);
             hexBox.MinimumSize = new Size(862, 0);
             hexBox.Name = "hexBox";
-            hexBox.ReadOnly = true;
             hexBox.ShadowSelectionColor = Color.FromArgb(100, 60, 188, 255);
-            hexBox.Size = new Size(862, 1000);
+            hexBox.Size = new Size(862, 960);
             hexBox.StringViewVisible = true;
             hexBox.TabIndex = 0;
             hexBox.UseFixedBytesPerLine = true;
             hexBox.VScrollBarVisible = true;
             // 
-            // HexView
+            // saveButton
+            // 
+            saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            saveButton.Location = new Point(644, 978);
+            saveButton.Name = "saveButton";
+            saveButton.Size = new Size(112, 34);
+            saveButton.TabIndex = 1;
+            saveButton.Text = "Save";
+            saveButton.UseVisualStyleBackColor = true;
+            saveButton.Click += saveButton_Click;
+            // 
+            // cancelButton
+            // 
+            cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            cancelButton.Location = new Point(762, 978);
+            cancelButton.Name = "cancelButton";
+            cancelButton.Size = new Size(112, 34);
+            cancelButton.TabIndex = 2;
+            cancelButton.Text = "Cancel";
+            cancelButton.UseVisualStyleBackColor = true;
+            cancelButton.Click += cancelButton_Click;
+            // 
+            // HexEditor
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(886, 1024);
+            Controls.Add(cancelButton);
+            Controls.Add(saveButton);
             Controls.Add(hexBox);
-            Name = "HexView";
+            Name = "HexEditor";
             ResumeLayout(false);
         }
 
         #endregion
 
         private HexBox hexBox;
+        private Button saveButton;
+        private Button cancelButton;
     }
 }

@@ -1,4 +1,8 @@
-﻿using System.IO.Compression;
+﻿using NAudio.Vorbis;
+using NAudio.Wave;
+using System.IO.Compression;
+using System.Media;
+using System.Text.RegularExpressions;
 
 namespace BigViewer
 {
@@ -77,7 +81,14 @@ namespace BigViewer
 
         public static byte[] ConvertStringToBytes(string input)
         {
-            return input.Split('-').Select((x) => byte.Parse(x, System.Globalization.NumberStyles.HexNumber)).ToArray();
+            if ((new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$")).IsMatch(input))
+            {
+                return input.Split('-').Select((x) => byte.Parse(x, System.Globalization.NumberStyles.HexNumber)).ToArray();
+            }
+            else
+            {
+                return [];
+            }
         }
 
         public static int[] FindSequence(byte[] data, byte[] pattern)
@@ -255,6 +266,167 @@ namespace BigViewer
                     return result.ToArray();
                 default:
                     return rawData;
+            }
+        }
+
+        public static void DisplayEditRaw(byte[] rawData, byte[] type, string title, ResourceFile parentResourceFile, int resId, Action act)
+        {
+            // parentResourceFile and resId is for updating parent resource file.
+            // Action is for updating DataGridView of parent Form.
+            switch (type)
+            {
+                case [0x05, 0xC5, 0xE4, 0x69]:
+                    try
+                    {
+                        LittleEditor littleEditor = new LittleEditor(rawData, title, parentResourceFile, resId, act);
+                        littleEditor.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+                default:
+                    try
+                    {
+                        HexEditor datView = new HexEditor(rawData, title, parentResourceFile, resId, act);
+                        datView.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+            }
+        }
+
+        public static void DisplayEditRaw(byte[] rawData, byte[] type, string title, LittleResourceFile parentLittleResourceFile, int resId, Action act)
+        {
+            // parentResourceFile and resId is for updating parent little resource file.
+            // Action is for updating DataGridView of parent Form.
+            switch (type)
+            {
+                case [0x05, 0xC5, 0xE4, 0x69]:
+                    try
+                    {
+                        LittleEditor littleEditor = new LittleEditor(rawData, title, parentLittleResourceFile, resId, act);
+                        littleEditor.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+                default:
+                    try
+                    {
+                        HexEditor datView = new HexEditor(rawData, title, parentLittleResourceFile, resId, act);
+                        datView.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+            }
+        }
+
+        public static void DisplayRaw(byte[] rawData, byte[] type, string title)
+        {
+            switch (type)
+            {
+                case [0x78, 0x86, 0x17, 0xB7]:
+                    try
+                    {
+                        // Check for PNG header
+                        if (rawData[0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
+                        {
+                            Form imageView = new Form();
+                            imageView.MinimumSize = Size.Empty;
+                            imageView.AutoSize = true;
+                            imageView.MaximizeBox = false;
+                            imageView.FormBorderStyle = FormBorderStyle.FixedSingle;
+                            imageView.Text = title;
+                            PictureBox imageBox = new PictureBox();
+                            imageBox.Image = Image.FromStream(new MemoryStream(rawData));
+                            imageBox.SizeMode = PictureBoxSizeMode.AutoSize;
+                            imageView.Controls.Add(imageBox);
+                            imageView.Show();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Incorrect file header", "Error");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+                case [0x54, 0x77, 0x8A, 0xFD]:
+                    try
+                    {
+                        // Check for WAV header
+                        if (rawData[0..0x4].SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }) && rawData[0x8..0xC].SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
+                        {
+                            new SoundPlayer(new MemoryStream(rawData)).Play();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Incorrect file header", "Error");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+                case [0x52, 0x49, 0x46, 0x46]:
+                    try
+                    {
+                        // Check for OGG header
+                        if (rawData[0..0x4].SequenceEqual(new byte[] { 0x4F, 0x67, 0x67, 0x53 }))
+                        {
+                            WaveOut waveOut = new WaveOut();
+                            waveOut.Init(new VorbisWaveReader(new MemoryStream(rawData)));
+                            waveOut.Play();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Incorrect file header", "Error");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+                default:
+                    try
+                    {
+                        HexEditor datView = new HexEditor(rawData, title);
+                        datView.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                    break;
+            }
+        }
+
+
+        public static void Display(byte[] data, string title)
+        {
+            try
+            {
+                HexEditor datView = new HexEditor(data, title);
+                datView.Text = title;
+                datView.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
             }
         }
     }
