@@ -14,13 +14,32 @@ namespace BigViewer
         public HexEditor(byte[] displayData, string title, ResourceFile _parentResourceFile, int _id, Action _action)
         {
             InitializeComponent();
-            parentResourceFile = _parentResourceFile;
+
+            if (_parentResourceFile != null)
+            {
+                if (_id >= 0 && _id < _parentResourceFile.resourceCount)
+                {
+                    parentResourceFile = _parentResourceFile;
+                    idInParent = _id;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid resource ID received!");
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Parent resource cannot be null!");
+            }
             parentLittleResourceFile = null;
             idInParent = _id;
             action = _action;
             this.Tag = _id;
             this.Text = title;
             this.Width += SystemInformation.VerticalScrollBarWidth;
+            saveButton.Enabled = true;
+            cancelButton.Enabled = true;
+            hexBox.ReadOnly = false;
             byteProvider = new DynamicByteProvider(displayData);
             hexBox.ByteProvider = byteProvider;
             for (int i = 0; i < displayData.Length; i++)
@@ -33,13 +52,32 @@ namespace BigViewer
         public HexEditor(byte[] displayData, string title, LittleResourceFile _parentLittleResourceFile, int _id, Action _action)
         {
             InitializeComponent();
+
+            if (_parentLittleResourceFile != null)
+            {
+                if (_id >= 0 && _id < _parentLittleResourceFile.resourceCount)
+                {
+                    parentLittleResourceFile = _parentLittleResourceFile;
+                    idInParent = _id;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid resource ID received!");
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Parent resource cannot be null!");
+            }
             parentResourceFile = null;
-            parentLittleResourceFile = _parentLittleResourceFile;
             idInParent = _id;
             action = _action;
             this.Tag = _id;
             this.Text = title;
             this.Width += SystemInformation.VerticalScrollBarWidth;
+            saveButton.Enabled = true;
+            cancelButton.Enabled = true;
+            hexBox.ReadOnly = false;
             byteProvider = new DynamicByteProvider(displayData);
             hexBox.ByteProvider = byteProvider;
             for (int i = 0; i < displayData.Length; i++)
@@ -56,11 +94,12 @@ namespace BigViewer
             parentLittleResourceFile = null;
             idInParent = _id;
             action = null;
-            this.saveButton.Enabled = false;
-            this.cancelButton.Enabled = false;
             this.Tag = _id;
             this.Text = title;
             this.Width += SystemInformation.VerticalScrollBarWidth;
+            saveButton.Enabled = false;
+            cancelButton.Enabled = false;
+            hexBox.ReadOnly = true;
             byteProvider = new DynamicByteProvider(displayData);
             hexBox.ByteProvider = byteProvider;
             for (int i = 0; i < displayData.Length; i++)

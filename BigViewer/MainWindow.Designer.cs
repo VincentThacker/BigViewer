@@ -39,7 +39,6 @@
             RawSize = new DataGridViewTextBoxColumn();
             Format = new DataGridViewTextBoxColumn();
             infoBox = new ListBox();
-            exportDataButton = new Button();
             searchButton = new Button();
             resultsBox = new ListBox();
             exportSelectedButton = new Button();
@@ -168,22 +167,10 @@
             infoBox.Size = new Size(348, 154);
             infoBox.TabIndex = 4;
             // 
-            // exportDataButton
-            // 
-            exportDataButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            exportDataButton.Enabled = false;
-            exportDataButton.Location = new Point(543, 92);
-            exportDataButton.Name = "exportDataButton";
-            exportDataButton.Size = new Size(171, 34);
-            exportDataButton.TabIndex = 5;
-            exportDataButton.Text = "Export All Data";
-            exportDataButton.UseVisualStyleBackColor = true;
-            exportDataButton.Click += exportDataButton_Click;
-            // 
             // searchButton
             // 
             searchButton.Enabled = false;
-            searchButton.Location = new Point(366, 52);
+            searchButton.Location = new Point(248, 52);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(112, 34);
             searchButton.TabIndex = 6;
@@ -205,7 +192,7 @@
             // 
             exportSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             exportSelectedButton.Enabled = false;
-            exportSelectedButton.Location = new Point(366, 92);
+            exportSelectedButton.Location = new Point(543, 92);
             exportSelectedButton.Name = "exportSelectedButton";
             exportSelectedButton.Size = new Size(171, 34);
             exportSelectedButton.TabIndex = 8;
@@ -225,8 +212,9 @@
             // 
             // replaceButton
             // 
+            replaceButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             replaceButton.Enabled = false;
-            replaceButton.Location = new Point(484, 52);
+            replaceButton.Location = new Point(366, 52);
             replaceButton.Name = "replaceButton";
             replaceButton.Size = new Size(112, 34);
             replaceButton.TabIndex = 10;
@@ -269,7 +257,6 @@
             Controls.Add(exportSelectedButton);
             Controls.Add(resultsBox);
             Controls.Add(searchButton);
-            Controls.Add(exportDataButton);
             Controls.Add(infoBox);
             Controls.Add(resourceList);
             Controls.Add(pathBox);
@@ -291,7 +278,6 @@
         private TextBox pathBox;
         private DataGridView resourceList;
         private ListBox infoBox;
-        private Button exportDataButton;
         private Button searchButton;
         private ListBox resultsBox;
         private Button exportSelectedButton;

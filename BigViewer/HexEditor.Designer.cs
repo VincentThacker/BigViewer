@@ -45,6 +45,7 @@ namespace BigViewer
             hexBox.Location = new Point(12, 12);
             hexBox.MinimumSize = new Size(862, 0);
             hexBox.Name = "hexBox";
+            hexBox.ReadOnly = true;
             hexBox.ShadowSelectionColor = Color.FromArgb(100, 60, 188, 255);
             hexBox.Size = new Size(862, 960);
             hexBox.StringViewVisible = true;
@@ -55,6 +56,7 @@ namespace BigViewer
             // saveButton
             // 
             saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            saveButton.Enabled = false;
             saveButton.Location = new Point(644, 978);
             saveButton.Name = "saveButton";
             saveButton.Size = new Size(112, 34);
@@ -66,6 +68,7 @@ namespace BigViewer
             // cancelButton
             // 
             cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            cancelButton.Enabled = false;
             cancelButton.Location = new Point(762, 978);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new Size(112, 34);

@@ -1,5 +1,4 @@
 using Microsoft.VisualBasic;
-using System.Diagnostics;
 
 namespace BigViewer
 {
@@ -69,7 +68,7 @@ namespace BigViewer
                         if (!alreadyOpen)
                         {
                             Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
-                            Utils.DisplayRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, res.id, this);
+                            Utils.DisplayRaw(res.rawData, res.type, "[View] " + res.id.ToString() + " in " + pathBox.Text, res.id, this);
                         }
                     }
                     else
@@ -106,7 +105,7 @@ namespace BigViewer
                         if (!alreadyOpen)
                         {
                             Resource res = currentFile.resources[resourceList.SelectedRows[0].Index];
-                            Utils.DisplayEditRaw(res.rawData, res.type, res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI, this);
+                            Utils.DisplayEditRaw(res.rawData, res.type, "[Edit] " + res.id.ToString() + " in " + pathBox.Text, currentFile, res.id, DisplayInfoUI, this);
                         }
                     }
                     else
@@ -165,21 +164,6 @@ namespace BigViewer
                 {
                     MessageBox.Show("Number of selected items is incorrect!", "Error");
                 }
-            }
-        }
-
-        private void exportDataButton_Click(object sender, EventArgs e)
-        {
-            if (currentFile != null)
-            {
-                byte[] dataType = new byte[] { 0x23, 0x22, 0xE0, 0xF4 };
-                List<Resource> resourcesDataOnly = currentFile.resources.Where((x) => x.type.SequenceEqual(dataType)).ToList();
-                List<byte> dat = new List<byte>();
-                foreach (Resource res in resourcesDataOnly)
-                {
-                    dat.AddRange(res.rawData);
-                }
-                Utils.SaveDataToFile(dat, "Data (*.bin)|*.bin", pathBox.Text, "_alldata");
             }
         }
 

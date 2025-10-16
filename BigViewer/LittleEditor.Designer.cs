@@ -43,6 +43,7 @@
             replaceButton = new Button();
             viewRawButton = new Button();
             saveButton = new Button();
+            cancelButton = new Button();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             SuspendLayout();
             // 
@@ -70,7 +71,7 @@
             resourceList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, FileSize, RawSize, Format });
             resourceList.EditMode = DataGridViewEditMode.EditProgrammatically;
-            resourceList.Location = new Point(12, 252);
+            resourceList.Location = new Point(12, 212);
             resourceList.MultiSelect = false;
             resourceList.Name = "resourceList";
             resourceList.ReadOnly = true;
@@ -139,7 +140,7 @@
             // 
             infoBox.FormattingEnabled = true;
             infoBox.HorizontalScrollbar = true;
-            infoBox.Location = new Point(12, 92);
+            infoBox.Location = new Point(12, 52);
             infoBox.Name = "infoBox";
             infoBox.Size = new Size(348, 154);
             infoBox.TabIndex = 4;
@@ -153,13 +154,14 @@
             searchButton.TabIndex = 6;
             searchButton.Text = "Search";
             searchButton.UseVisualStyleBackColor = true;
+            searchButton.Click += searchButton_Click;
             // 
             // resultsBox
             // 
             resultsBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             resultsBox.FormattingEnabled = true;
             resultsBox.HorizontalScrollbar = true;
-            resultsBox.Location = new Point(366, 92);
+            resultsBox.Location = new Point(366, 52);
             resultsBox.Name = "resultsBox";
             resultsBox.Size = new Size(348, 154);
             resultsBox.TabIndex = 7;
@@ -168,15 +170,17 @@
             // 
             exportSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             exportSelectedButton.Enabled = false;
-            exportSelectedButton.Location = new Point(12, 52);
+            exportSelectedButton.Location = new Point(543, 12);
             exportSelectedButton.Name = "exportSelectedButton";
             exportSelectedButton.Size = new Size(171, 34);
             exportSelectedButton.TabIndex = 8;
             exportSelectedButton.Text = "Export Selected";
             exportSelectedButton.UseVisualStyleBackColor = true;
+            exportSelectedButton.Click += exportSelectedButton_Click;
             // 
             // replaceButton
             // 
+            replaceButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             replaceButton.Enabled = false;
             replaceButton.Location = new Point(366, 12);
             replaceButton.Name = "replaceButton";
@@ -184,6 +188,7 @@
             replaceButton.TabIndex = 10;
             replaceButton.Text = "Replace";
             replaceButton.UseVisualStyleBackColor = true;
+            replaceButton.Click += replaceButton_Click;
             // 
             // viewRawButton
             // 
@@ -198,8 +203,9 @@
             // 
             // saveButton
             // 
+            saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             saveButton.Enabled = false;
-            saveButton.Location = new Point(602, 12);
+            saveButton.Location = new Point(484, 818);
             saveButton.Name = "saveButton";
             saveButton.Size = new Size(112, 34);
             saveButton.TabIndex = 12;
@@ -207,12 +213,25 @@
             saveButton.UseVisualStyleBackColor = true;
             saveButton.Click += saveButton_Click;
             // 
+            // cancelButton
+            // 
+            cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            cancelButton.Enabled = false;
+            cancelButton.Location = new Point(602, 818);
+            cancelButton.Name = "cancelButton";
+            cancelButton.Size = new Size(112, 34);
+            cancelButton.TabIndex = 13;
+            cancelButton.Text = "Cancel";
+            cancelButton.UseVisualStyleBackColor = true;
+            cancelButton.Click += cancelButton_Click;
+            // 
             // LittleEditor
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             ClientSize = new Size(726, 864);
+            Controls.Add(cancelButton);
             Controls.Add(saveButton);
             Controls.Add(viewRawButton);
             Controls.Add(replaceButton);
@@ -245,5 +264,6 @@
         private DataGridViewTextBoxColumn FileSize;
         private DataGridViewTextBoxColumn RawSize;
         private DataGridViewTextBoxColumn Format;
+        private Button cancelButton;
     }
 }
