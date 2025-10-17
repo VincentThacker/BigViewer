@@ -1,9 +1,6 @@
-﻿using NAudio.Vorbis;
-using NAudio.Wave;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Media;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
 
 namespace BigViewer
 {
@@ -140,7 +137,7 @@ namespace BigViewer
             }
         }
 
-        public static MemoryStream DecompZlibData(byte[] data)
+        public static byte[] DecompZlibData(byte[] data)
         {
             using (MemoryStream result = new MemoryStream())
             {
@@ -149,18 +146,17 @@ namespace BigViewer
                     using (ZLibStream zs = new ZLibStream(new MemoryStream(data), CompressionMode.Decompress))
                     {
                         zs.CopyTo(result);
-                        result.Position = 0;
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                 }
-                return result;
+                return result.ToArray();
             }
         }
 
-        public static MemoryStream CompZlibData(byte[] data)
+        public static byte[] CompZlibData(byte[] data)
         {
             using (MemoryStream result = new MemoryStream())
             {
@@ -170,13 +166,12 @@ namespace BigViewer
                     {
                         (new MemoryStream(data)).CopyTo(zs);
                     }
-                    // result.Position = 0;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                 }
-                return result;
+                return result.ToArray();
             }
         }
 
@@ -186,16 +181,18 @@ namespace BigViewer
             {
                 case [0x23, 0x22, 0xE0, 0xF4]:
                     return "data";
+                case [0xDC, 0xAA, 0x86, 0xF6]:
+                    return "string";
                 case [0x78, 0x86, 0x17, 0xB7]:
                     return "png";
                 case [0x54, 0x77, 0x8A, 0xFD]:
                     return "wav";
+                /*
                 case [0x52, 0x49, 0x46, 0x46]:
                     return "ogg";
+                */
                 case [0x05, 0xC5, 0xE4, 0x69]:
                     return "little";
-                case [0xDC, 0xAA, 0x86, 0xF6]:
-                    return "string";
                 default:
                     return BitConverter.ToString(type);
             }
@@ -209,8 +206,10 @@ namespace BigViewer
                     return "PNG files (*.png)|*.png";
                 case [0x54, 0x77, 0x8A, 0xFD]:
                     return "WAV files (*.wav)|*.wav";
+                /*
                 case [0x52, 0x49, 0x46, 0x46]:
                     return "OGG files (*.ogg)|*.ogg";
+                */
                 default:
                     return "Data (*.bin)|*.bin";
             }
@@ -240,7 +239,7 @@ namespace BigViewer
             else if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x80, 0x00 }) && data[0xC..0xE].SequenceEqual(new byte[] { 0x78, 0xDA }) && BitConverter.ToUInt32(data[0x8..0xC]) == data.Length - 0xC)
             {
                 // zlib
-                return (2, DecompZlibData(data[0xC..]).ToArray());
+                return (2, DecompZlibData(data[0xC..]));
             }
             else
             {
@@ -261,12 +260,36 @@ namespace BigViewer
                     List<byte> result = [];
                     result.AddRange(new byte[] { 0x04, 0x00, 0x80, 0x00 });
                     result.AddRange(BitConverter.GetBytes(rawData.Length));
-                    byte[] data = CompZlibData(rawData).ToArray();
+                    byte[] data = CompZlibData(rawData);
                     result.AddRange(BitConverter.GetBytes(data.Length));
                     result.AddRange(data);
                     return result.ToArray();
                 default:
                     return rawData;
+            }
+        }
+
+        public static bool CheckPNGHeader(byte[] data)
+        {
+            if (data.Length > 0x8 && data[0x0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }) && data[^0x8..^0x0].SequenceEqual(new byte[] { 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool CheckWAVHeader(byte[] data)
+        {
+            if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }) && data[0x8..0xC].SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -340,7 +363,7 @@ namespace BigViewer
                     try
                     {
                         // Check for PNG header
-                        if (rawData[0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
+                        if (CheckPNGHeader(rawData))
                         {
                             Form imageView = new Form();
                             imageView.Tag = resId;
@@ -369,7 +392,7 @@ namespace BigViewer
                     try
                     {
                         // Check for WAV header
-                        if (rawData[0..0x4].SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }) && rawData[0x8..0xC].SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
+                        if (CheckWAVHeader(rawData))
                         {
                             new SoundPlayer(new MemoryStream(rawData)).Play();
                         }
@@ -383,6 +406,7 @@ namespace BigViewer
                         MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                     }
                     break;
+                /*
                 case [0x52, 0x49, 0x46, 0x46]:
                     try
                     {
@@ -403,6 +427,7 @@ namespace BigViewer
                         MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                     }
                     break;
+                */
                 default:
                     try
                     {

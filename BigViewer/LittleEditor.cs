@@ -15,8 +15,6 @@ namespace BigViewer
         {
             InitializeComponent();
 
-            Reset();
-
             if (_parentResourceFile != null)
             {
                 if (_id >= 0 && _id < _parentResourceFile.resourceCount)
@@ -52,13 +50,10 @@ namespace BigViewer
             cancelButton.Enabled = true;
         }
 
-
         // Editing resource from parent LittleResourceFile
         public LittleEditor(byte[] data, string title, LittleResourceFile _parentLittleResourceFile, int _id, Action _action)
         {
             InitializeComponent();
-
-            Reset();
 
             if (_parentLittleResourceFile != null)
             {
@@ -240,7 +235,6 @@ namespace BigViewer
             }
         }
 
-
         private void saveButton_Click(object sender, EventArgs e)
         {
             if (currentLittleFile != null && idInParent != -1 && action != null)
@@ -264,7 +258,7 @@ namespace BigViewer
             Close();
         }
 
-        public void DisplayInfoUI()
+        private void DisplayInfoUI()
         {
             if (currentLittleFile != null)
             {
@@ -272,40 +266,37 @@ namespace BigViewer
                 resultsBox.Items.Clear();
                 resourceList.Rows.Clear();
                 // Display file info
+                infoBox.Items.Add("Core: " + currentLittleFile.isCore.ToString());
                 infoBox.Items.Add("Total size: " + "0x" + currentLittleFile.totalSize.ToString("X"));
                 infoBox.Items.Add("Resource count: " + currentLittleFile.resourceCount.ToString());
-
-                // infoBox.Items.Add("Content start: " + "0x" + currentFile.tableEnd.ToString("X"));
-                // infoBox.Items.Add("Clean size: " + currentFile.contentSize.ToString());
+                infoBox.Items.Add("Type TOC start: " + "0x" + currentLittleFile.typeTableStart.ToString("X"));
+                infoBox.Items.Add("Content start: " + "0x" + currentLittleFile.typeTableEnd.ToString("X"));
 
                 // Populate DataGridView using resource list
-                foreach (Resource res in currentLittleFile.resources)
+                if (!currentLittleFile.isCore)
                 {
-                    resourceList.Rows.Add(res.id.ToString(), res.typeName, "0x" + res.offset.ToString("X"), "0x" + res.size.ToString("X"), "0x" + res.rawSize.ToString("X"), res.formatName);
+                    foreach (Resource res in currentLittleFile.resources)
+                    {
+                        resourceList.Rows.Add(res.id.ToString(), res.typeName, "0x" + res.offset.ToString("X"), "0x" + res.size.ToString("X"), "0x" + res.rawSize.ToString("X"), res.formatName);
+                    }
+                }
+                else
+                {
+                    DataGridViewTextBoxColumn otherData = new DataGridViewTextBoxColumn();
+                    otherData.HeaderText = "Other Data";
+                    otherData.MinimumWidth = 8;
+                    otherData.Name = "OtherData";
+                    otherData.ReadOnly = true;
+                    otherData.Resizable = DataGridViewTriState.False;
+                    resourceList.Columns.Add(otherData);
+                    foreach (Resource res in currentLittleFile.resources)
+                    {
+                        resourceList.Rows.Add(res.id.ToString(), res.typeName, "0x" + res.offset.ToString("X"), "0x" + res.size.ToString("X"), "0x" + res.rawSize.ToString("X"), res.formatName, BitConverter.ToString(res.otherData));
+                    }
                 }
                 resourceList.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
                 resourceList.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
             }
         }
-
-        void Reset()
-        {
-            currentLittleFile = null;
-            idInParent = -1;
-            action = null;
-            this.Text = "";
-            infoBox.Items.Clear();
-            resultsBox.Items.Clear();
-            resourceList.Rows.Clear();
-            GC.Collect();
-            editRawButton.Enabled = false;
-            viewRawButton.Enabled = false;
-            exportSelectedButton.Enabled = false;
-            saveButton.Enabled = false;
-            searchButton.Enabled = false;
-            replaceButton.Enabled = false;
-        }
-
-
     }
 }

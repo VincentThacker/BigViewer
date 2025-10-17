@@ -74,7 +74,7 @@
             // 
             pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             pathBox.BorderStyle = BorderStyle.FixedSingle;
-            pathBox.Location = new Point(130, 12);
+            pathBox.Location = new Point(130, 14);
             pathBox.Name = "pathBox";
             pathBox.ReadOnly = true;
             pathBox.Size = new Size(584, 31);

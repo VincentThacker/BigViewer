@@ -2,10 +2,8 @@
 {
     internal class LittleResourceFile
     {
-        // public string filePath = "";
-        // public static int resourceCountStart = 0x2;
+        public bool isCore;
         public int resourceCount = 0;
-        public static ushort offsetTableStart = 0x6;
         public int offsetTableEnd = 0;
         public int typeTableStart = 0;
         public int typeTableEnd = 0;
@@ -17,24 +15,25 @@
 
         public LittleResourceFile(byte[] totalData)
         {
-            if (totalData[0x0] == 0x00)
+            if (totalData[0x0..0x2].SequenceEqual(new byte[] { 0x00, 0xA0 }))
             {
-                // filePath = _filePath;
+                // Format found in non-0 packs
+                isCore = false;
                 totalSize = totalData.Length;
                 resourceCount = BitConverter.ToUInt16(totalData[0x2..0x4]);
-                offsetTableEnd = offsetTableStart + (resourceCount * 2);
+                offsetTableEnd = 0x6 + (resourceCount * 2);
                 typeTableStart = offsetTableEnd + 0x4;
                 typeTableEnd = typeTableStart + (resourceCount * 4);
 
                 headerBytes1 = totalData[0x0..0x2];
-                headerBytes2 = totalData[0x4..offsetTableStart];
+                headerBytes2 = totalData[0x4..0x6];
 
                 // Check for inconsistencies
                 if (totalSize > 0xFFFF)
                 {
                     throw new ArgumentException("File size too large!");
                 }
-                if (BitConverter.ToUInt16(totalData[offsetTableStart..(offsetTableStart + 2)]) != typeTableEnd)
+                if (BitConverter.ToUInt16(totalData[0x6..0x8]) != typeTableEnd)
                 {
                     throw new ArgumentException("TOC end and content start mismatch!");
                 }
@@ -48,7 +47,7 @@
                 List<ushort> sortList = [];
                 for (int i = 0; i < resourceCount; i++)
                 {
-                    var num = offsetTableStart + (i * 2);
+                    var num = 0x6 + (i * 2);
                     testList.Add(BitConverter.ToUInt16(totalData[num..(num + 0x2)]));
                     sortList.Add(BitConverter.ToUInt16(totalData[num..(num + 0x2)]));
                 }
@@ -68,8 +67,7 @@
                 // Construct resource list
                 for (int i = 0; i < resourceCount; i++)
                 {
-                    
-                    var numOffset = offsetTableStart + (i * 2);
+                    var numOffset = 0x6 + (i * 2);
                     var numType = typeTableStart + (i * 4);
                     ushort offset = BitConverter.ToUInt16(totalData[numOffset..(numOffset + 0x2)]);
                     ushort offsetNext = BitConverter.ToUInt16(totalData[(numOffset + 0x2)..(numOffset + 0x4)]);
@@ -78,6 +76,71 @@
                         _type: totalData[numType..(numType + 0x4)],
                         _offset: offset,
                         _data: totalData[offset..offsetNext]
+                    ));
+                }
+            }
+            else if (totalData[0x0..0x2].SequenceEqual(new byte[] { 0x00, 0x20 }))
+            {
+                // Format found in pack core 0
+                isCore = true;
+                totalSize = totalData.Length;
+                resourceCount = BitConverter.ToUInt16(totalData[0x2..0x4]);
+                offsetTableEnd = 0x4 + (resourceCount * 4);
+                typeTableStart = offsetTableEnd + 0x4;
+                typeTableEnd = typeTableStart + (resourceCount * 4);
+
+                headerBytes1 = totalData[0x0..0x2];
+                headerBytes2 = [];
+
+                // Check for inconsistencies
+                if (totalSize > 0xFFFF)
+                {
+                    throw new ArgumentException("File size too large!");
+                }
+                if (BitConverter.ToUInt16(totalData[0x6..0x8]) != typeTableEnd)
+                {
+                    throw new ArgumentException("TOC end and content start mismatch!");
+                }
+                if (!(totalData[(offsetTableEnd + 2)..(offsetTableEnd + 4)].SequenceEqual(new byte[] { 0x00, 0x00 }) && BitConverter.ToUInt16(totalData[offsetTableEnd..(offsetTableEnd + 2)]) == totalSize))
+                {
+                    throw new ArgumentException("TOC end mismatch!");
+                }
+
+                // Check if TOC is ordered
+                List<ushort> testList = [];
+                List<ushort> sortList = [];
+                for (int i = 0; i < resourceCount; i++)
+                {
+                    var num = 0x4 + (i * 4);
+                    testList.Add(BitConverter.ToUInt16(totalData[(num + 0x2)..(num + 0x4)]));
+                    sortList.Add(BitConverter.ToUInt16(totalData[(num + 0x2)..(num + 0x4)]));
+                }
+                sortList.Sort();
+                if (!sortList.SequenceEqual(testList))
+                {
+                    testList = [];
+                    sortList = [];
+                    throw new ArgumentException("TOC is not ordered!");
+                }
+                else
+                {
+                    testList = [];
+                    sortList = [];
+                }
+
+                // Construct resource list
+                for (int i = 0; i < resourceCount; i++)
+                {
+                    var num = 0x4 + (i * 4);
+                    var numType = typeTableStart + (i * 4);
+                    ushort offset = BitConverter.ToUInt16(totalData[(num + 0x2)..(num + 0x4)]);
+                    ushort offsetNext = BitConverter.ToUInt16(totalData[(num + 0x6)..(num + 0x8)]);
+                    resources.Add(new Resource(
+                        _id: i,
+                        _type: totalData[numType..(numType + 0x4)],
+                        _offset: offset,
+                        _data: totalData[offset..(i == (resourceCount - 1) ? totalSize : offsetNext)],
+                        _otherData: totalData[num..(num + 0x2)]
                     ));
                 }
             }
@@ -125,31 +188,62 @@
 
         public byte[] ConstructFile()
         {
-            List<byte> result = [];
+            if (!isCore)
+            {
+                List<byte> result = [];
 
-            // Construct header
-            result.AddRange(headerBytes1);
-            result.AddRange(BitConverter.GetBytes(checked((ushort)resourceCount)));
-            result.AddRange(headerBytes2);
-            // Construct offset table
-            foreach (Resource res in resources)
-            {
-                result.AddRange(BitConverter.GetBytes(checked((ushort)res.offset)));
+                // Construct header
+                result.AddRange(headerBytes1);
+                result.AddRange(BitConverter.GetBytes(checked((ushort)resourceCount)));
+                result.AddRange(headerBytes2);
+                // Construct offset table
+                foreach (Resource res in resources)
+                {
+                    result.AddRange(BitConverter.GetBytes(checked((ushort)res.offset)));
+                }
+                // Construct offset table ending
+                result.AddRange(BitConverter.GetBytes(checked((ushort)totalSize)));
+                result.AddRange(new byte[] { 0x00, 0x00 });
+                // Construct type table
+                foreach (Resource res in resources)
+                {
+                    result.AddRange(res.type);
+                }
+                // Construct data
+                foreach (Resource res in resources)
+                {
+                    result.AddRange(res.data);
+                }
+                return result.ToArray();
             }
-            // Construct offset table ending
-            result.AddRange(BitConverter.GetBytes(checked((ushort)totalSize)));
-            result.AddRange(new byte[] { 0x00, 0x00 });
-            // Construct type table
-            foreach (Resource res in resources)
+            else
             {
-                result.AddRange(res.type);
+                List<byte> result = [];
+
+                // Construct header
+                result.AddRange(headerBytes1);
+                result.AddRange(BitConverter.GetBytes(checked((ushort)resourceCount)));
+                // Construct offset table
+                foreach (Resource res in resources)
+                {
+                    result.AddRange(res.otherData);
+                    result.AddRange(BitConverter.GetBytes(checked((ushort)res.offset)));
+                }
+                // Construct offset table ending
+                result.AddRange(BitConverter.GetBytes(checked((ushort)totalSize)));
+                result.AddRange(new byte[] { 0x00, 0x00 });
+                // Construct type table
+                foreach (Resource res in resources)
+                {
+                    result.AddRange(res.type);
+                }
+                // Construct data
+                foreach (Resource res in resources)
+                {
+                    result.AddRange(res.data);
+                }
+                return result.ToArray();
             }
-            // Construct data
-            foreach (Resource res in resources)
-            {
-                result.AddRange(res.data);
-            }
-            return result.ToArray();
         }
     }
 }

@@ -9,8 +9,6 @@ namespace BigViewer
         public MainWindow()
         {
             InitializeComponent();
-            pathBox.AutoSize = false;
-            pathBox.Size = new Size(pathBox.Size.Width, openFileButton.Size.Height);
         }
 
         private void openFileButton_Click(object sender, EventArgs e)
@@ -34,7 +32,6 @@ namespace BigViewer
                 editRawButton.Enabled = true;
                 viewRawButton.Enabled = true;
                 exportSelectedButton.Enabled = true;
-                exportDataButton.Enabled = true;
                 saveFileButton.Enabled = true;
                 searchButton.Enabled = true;
                 replaceButton.Enabled = true;
@@ -111,7 +108,7 @@ namespace BigViewer
                     else
                     {
                         MessageBox.Show("List mismatch! Please relaunch.", "Error");
-                    }                    
+                    }
                 }
                 else
                 {
@@ -212,7 +209,7 @@ namespace BigViewer
             }
         }
 
-        public void DisplayInfoUI()
+        private void DisplayInfoUI()
         {
             if (currentFile != null)
             {
@@ -220,12 +217,10 @@ namespace BigViewer
                 resultsBox.Items.Clear();
                 resourceList.Rows.Clear();
                 // Display file info
+                infoBox.Items.Add("Resource count: " + currentFile.resourceCount.ToString());
                 infoBox.Items.Add("Header size: " + "0x" + currentFile.headerSize.ToString("X"));
                 infoBox.Items.Add("TOC start: " + "0x" + currentFile.tableStart.ToString("X"));
-                infoBox.Items.Add("Resource count: " + currentFile.resourceCount.ToString());
                 infoBox.Items.Add("Content start: " + "0x" + currentFile.tableEnd.ToString("X"));
-                infoBox.Items.Add("Clean size: " + currentFile.contentSize.ToString());
-                infoBox.Items.Add("TOC end: " + "0x" + currentFile.firstResourceOffset.ToString("X"));
 
                 // Populate DataGridView using resource list
                 foreach (Resource res in currentFile.resources)
@@ -237,10 +232,10 @@ namespace BigViewer
             }
         }
 
-        void Reset()
+        private void Reset()
         {
-            pathBox.Clear();
             currentFile = null;
+            pathBox.Clear();
             infoBox.Items.Clear();
             resultsBox.Items.Clear();
             resourceList.Rows.Clear();
@@ -248,7 +243,6 @@ namespace BigViewer
             editRawButton.Enabled = false;
             viewRawButton.Enabled = false;
             exportSelectedButton.Enabled = false;
-            exportDataButton.Enabled = false;
             saveFileButton.Enabled = false;
             searchButton.Enabled = false;
             replaceButton.Enabled = false;
