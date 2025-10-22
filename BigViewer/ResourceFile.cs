@@ -2,7 +2,6 @@
 {
     internal class ResourceFile
     {
-        // public bool active = false;
         public string filePath = "";
         public uint headerSize = 0;
         public uint resourceCount = 0;

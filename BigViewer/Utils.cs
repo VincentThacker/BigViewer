@@ -25,6 +25,22 @@ namespace BigViewer
             }
         }
 
+        public static string OpenFolderPath()
+        {
+            using (FolderBrowserDialog openDialog = new FolderBrowserDialog())
+            {
+                // openDialog.RestoreDirectory = true;
+                if (openDialog.ShowDialog() == DialogResult.OK)
+                {
+                    return openDialog.SelectedPath;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+        }
+
         public static void SaveDataToFile(byte[] dataToSave, string filter, string? filePath, string? fileNameAppend)
         {
             using (SaveFileDialog saveDialog = new SaveFileDialog())
@@ -212,6 +228,23 @@ namespace BigViewer
                 */
                 default:
                     return "Data (*.bin)|*.bin";
+            }
+        }
+
+        public static string GetTypeExt(byte[] type)
+        {
+            switch (type)
+            {
+                case [0x78, 0x86, 0x17, 0xB7]:
+                    return ".png";
+                case [0x54, 0x77, 0x8A, 0xFD]:
+                    return ".wav";
+                /*
+                case [0x52, 0x49, 0x46, 0x46]:
+                    return "ogg";
+                */
+                default:
+                    return ".bin";
             }
         }
 
@@ -441,21 +474,5 @@ namespace BigViewer
                     break;
             }
         }
-
-        /*
-        public static void Display(byte[] data, string title)
-        {
-            try
-            {
-                HexEditor datView = new HexEditor(data, title);
-                datView.Text = title;
-                datView.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
-            }
-        }
-        */
     }
 }

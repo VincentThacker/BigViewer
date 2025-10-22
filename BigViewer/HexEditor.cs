@@ -9,6 +9,7 @@ namespace BigViewer
         private int idInParent = -1;
         private Action? action;
         private DynamicByteProvider byteProvider;
+        private int[] searchResults = [];
 
         // Editing resource raw form in ResourceFile
         public HexEditor(byte[] displayData, string title, ResourceFile _parentResourceFile, int _id, Action _action)
@@ -128,9 +129,40 @@ namespace BigViewer
             Close();
         }
 
+        private void searchButton_Click(object sender, EventArgs e)
+        {
+            // Enter sequence of bytes to search (separated by -)
+            byte[] pattern = Utils.ConvertStringToBytes(searchBox.Text);
+            if (pattern.Length > 0)
+            {
+                searchResults = Utils.FindSequence(GetCurrentBytes(), pattern);
+                resultsBox.Items.Clear();
+                hexBox.HighlightedRegions.RemoveAll((x) => { return x.Color == Color.LightGreen; });
+                foreach (int i in searchResults)
+                {
+                    resultsBox.Items.Add("0x" + i.ToString("X"));
+                    hexBox.HighlightedRegions.Add(new HexBox.HighlightedRegion(i, pattern.Length, Color.LightGreen));
+                }
+                hexBox.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("Invalid input!", "Error");
+            }
+        }
+
+        private void resultsBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (resultsBox.SelectedIndex != -1)
+            {
+                hexBox.ScrollByteIntoView(searchResults[resultsBox.SelectedIndex]);
+            }
+        }
+
         public byte[] GetCurrentBytes()
         {
             return byteProvider.Bytes.ToArray();
+
         }
     }
 }

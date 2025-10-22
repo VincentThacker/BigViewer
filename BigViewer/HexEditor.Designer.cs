@@ -33,6 +33,9 @@ namespace BigViewer
             hexBox = new HexBox();
             saveButton = new Button();
             cancelButton = new Button();
+            searchButton = new Button();
+            searchBox = new TextBox();
+            resultsBox = new ListBox();
             SuspendLayout();
             // 
             // hexBox
@@ -42,7 +45,7 @@ namespace BigViewer
             hexBox.ColumnInfoVisible = true;
             hexBox.Font = new Font("Consolas", 10F);
             hexBox.LineInfoVisible = true;
-            hexBox.Location = new Point(12, 12);
+            hexBox.Location = new Point(12, 52);
             hexBox.MinimumSize = new Size(862, 0);
             hexBox.Name = "hexBox";
             hexBox.ReadOnly = true;
@@ -57,7 +60,7 @@ namespace BigViewer
             // 
             saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             saveButton.Enabled = false;
-            saveButton.Location = new Point(644, 978);
+            saveButton.Location = new Point(880, 938);
             saveButton.Name = "saveButton";
             saveButton.Size = new Size(112, 34);
             saveButton.TabIndex = 1;
@@ -69,7 +72,7 @@ namespace BigViewer
             // 
             cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             cancelButton.Enabled = false;
-            cancelButton.Location = new Point(762, 978);
+            cancelButton.Location = new Point(880, 978);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new Size(112, 34);
             cancelButton.TabIndex = 2;
@@ -77,16 +80,51 @@ namespace BigViewer
             cancelButton.UseVisualStyleBackColor = true;
             cancelButton.Click += cancelButton_Click;
             // 
+            // searchButton
+            // 
+            searchButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            searchButton.Location = new Point(880, 12);
+            searchButton.Name = "searchButton";
+            searchButton.Size = new Size(112, 34);
+            searchButton.TabIndex = 3;
+            searchButton.Text = "Search";
+            searchButton.UseVisualStyleBackColor = true;
+            searchButton.Click += searchButton_Click;
+            // 
+            // searchBox
+            // 
+            searchBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            searchBox.BorderStyle = BorderStyle.FixedSingle;
+            searchBox.Location = new Point(12, 14);
+            searchBox.Name = "searchBox";
+            searchBox.Size = new Size(862, 31);
+            searchBox.TabIndex = 4;
+            // 
+            // resultsBox
+            // 
+            resultsBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            resultsBox.FormattingEnabled = true;
+            resultsBox.HorizontalScrollbar = true;
+            resultsBox.Location = new Point(880, 52);
+            resultsBox.Name = "resultsBox";
+            resultsBox.Size = new Size(112, 879);
+            resultsBox.TabIndex = 5;
+            resultsBox.SelectedIndexChanged += resultsBox_SelectedIndexChanged;
+            // 
             // HexEditor
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(886, 1024);
+            ClientSize = new Size(1004, 1024);
+            Controls.Add(resultsBox);
+            Controls.Add(searchBox);
+            Controls.Add(searchButton);
             Controls.Add(cancelButton);
             Controls.Add(saveButton);
             Controls.Add(hexBox);
             Name = "HexEditor";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -94,5 +132,8 @@ namespace BigViewer
         private HexBox hexBox;
         private Button saveButton;
         private Button cancelButton;
+        private Button searchButton;
+        private TextBox searchBox;
+        private ListBox resultsBox;
     }
 }

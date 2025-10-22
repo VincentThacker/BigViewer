@@ -46,6 +46,7 @@
             replaceButton = new Button();
             viewRawButton = new Button();
             saveFileButton = new Button();
+            exportAllButton = new Button();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             SuspendLayout();
             // 
@@ -72,7 +73,7 @@
             // 
             // pathBox
             // 
-            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pathBox.BorderStyle = BorderStyle.FixedSingle;
             pathBox.Location = new Point(130, 14);
             pathBox.Name = "pathBox";
@@ -187,12 +188,13 @@
             resultsBox.Name = "resultsBox";
             resultsBox.Size = new Size(348, 154);
             resultsBox.TabIndex = 7;
+            resultsBox.SelectedIndexChanged += resultsBox_SelectedIndexChanged;
             // 
             // exportSelectedButton
             // 
             exportSelectedButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             exportSelectedButton.Enabled = false;
-            exportSelectedButton.Location = new Point(543, 92);
+            exportSelectedButton.Location = new Point(366, 92);
             exportSelectedButton.Name = "exportSelectedButton";
             exportSelectedButton.Size = new Size(171, 34);
             exportSelectedButton.TabIndex = 8;
@@ -244,12 +246,25 @@
             saveFileButton.UseVisualStyleBackColor = true;
             saveFileButton.Click += saveFileButton_Click;
             // 
+            // exportAllButton
+            // 
+            exportAllButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            exportAllButton.Enabled = false;
+            exportAllButton.Location = new Point(543, 92);
+            exportAllButton.Name = "exportAllButton";
+            exportAllButton.Size = new Size(171, 34);
+            exportAllButton.TabIndex = 13;
+            exportAllButton.Text = "Export All";
+            exportAllButton.UseVisualStyleBackColor = true;
+            exportAllButton.Click += exportAllButton_Click;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             ClientSize = new Size(726, 904);
+            Controls.Add(exportAllButton);
             Controls.Add(saveFileButton);
             Controls.Add(viewRawButton);
             Controls.Add(replaceButton);
@@ -291,5 +306,6 @@
         private DataGridViewTextBoxColumn FileSize;
         private DataGridViewTextBoxColumn RawSize;
         private DataGridViewTextBoxColumn Format;
+        private Button exportAllButton;
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.VisualBasic;
+using System.Text.RegularExpressions;
 
 namespace BigViewer
 {
@@ -32,6 +33,7 @@ namespace BigViewer
                 editRawButton.Enabled = true;
                 viewRawButton.Enabled = true;
                 exportSelectedButton.Enabled = true;
+                exportAllButton.Enabled = true;
                 saveFileButton.Enabled = true;
                 searchButton.Enabled = true;
                 replaceButton.Enabled = true;
@@ -164,6 +166,29 @@ namespace BigViewer
             }
         }
 
+        private void exportAllButton_Click(object sender, EventArgs e)
+        {
+            if (currentFile != null)
+            {
+                if (resourceList.SelectedRows.Count == 1)
+                {
+                    string folderPath = Utils.OpenFolderPath();
+                    string fileName = Path.GetFileNameWithoutExtension(pathBox.Text);
+                    foreach (Resource res in currentFile.resources)
+                    {
+                        using (FileStream fs = new FileStream(Path.Combine(folderPath, fileName + "_resource" + res.id.ToString() + Utils.GetTypeExt(res.type)), FileMode.Create, FileAccess.Write))
+                        {
+                            fs.Write(res.rawData, 0, res.rawData.Length);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Number of selected items is incorrect!", "Error");
+                }
+            }
+        }
+
         private void saveFileButton_Click(object sender, EventArgs e)
         {
             if (currentFile != null)
@@ -209,6 +234,11 @@ namespace BigViewer
             }
         }
 
+        private void resultsBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            resourceList.CurrentCell = resourceList.Rows[int.Parse((new Regex(@"[0-9]+(?=:)")).Match(resultsBox.GetItemText(resultsBox.SelectedItem) ?? "0:").Value)].Cells[0];
+        }
+
         private void DisplayInfoUI()
         {
             if (currentFile != null)
@@ -243,6 +273,7 @@ namespace BigViewer
             editRawButton.Enabled = false;
             viewRawButton.Enabled = false;
             exportSelectedButton.Enabled = false;
+            exportAllButton.Enabled = false;
             saveFileButton.Enabled = false;
             searchButton.Enabled = false;
             replaceButton.Enabled = false;
