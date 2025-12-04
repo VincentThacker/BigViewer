@@ -132,7 +132,7 @@ namespace BigViewer
         private void searchButton_Click(object sender, EventArgs e)
         {
             // Enter sequence of bytes to search (separated by -)
-            byte[] pattern = Utils.ConvertStringToBytes(searchBox.Text);
+            byte[] pattern = Utils.ConvertByteString(searchBox.Text);
             if (pattern.Length > 0)
             {
                 searchResults = Utils.FindSequence(GetCurrentBytes(), pattern);

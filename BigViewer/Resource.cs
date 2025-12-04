@@ -5,41 +5,41 @@
         public int id;
         public byte[] type;
         public string typeName;
-        public uint offset;
+        public int offset;
         public uint format;
         public string formatName;
-        public uint size;
-        public uint rawSize;
+        public int size;
+        public int rawSize;
         public byte[] data;
         public byte[] rawData;
         public byte[] otherData;
 
-        public Resource(int _id, byte[] _type, uint _offset, byte[] _data)
+        public Resource(int _id, byte[] _type, int _offset, byte[] _data)
         {
             id = _id;
             type = _type;
             typeName = Utils.GetTypeName(_type);
             offset = _offset;
             data = _data;
-            size = checked((uint)_data.Length);
+            size = _data.Length;
             (format, rawData) = Utils.DecodeResource(data);
             otherData = [];
             formatName = Utils.GetFormatName(format);
-            rawSize = checked((uint)rawData.Length);
+            rawSize = rawData.Length;
         }
 
-        public Resource(int _id, byte[] _type, uint _offset, byte[] _data, byte[] _otherData)
+        public Resource(int _id, byte[] _type, int _offset, byte[] _data, byte[] _otherData)
         {
             id = _id;
             type = _type;
             typeName = Utils.GetTypeName(_type);
             offset = _offset;
             data = _data;
-            size = checked((uint)_data.Length);
+            size = _data.Length;
             (format, rawData) = Utils.DecodeResource(data);
             otherData = _otherData;
             formatName = Utils.GetFormatName(format);
-            rawSize = checked((uint)rawData.Length);
+            rawSize = rawData.Length;
         }
     }
 }

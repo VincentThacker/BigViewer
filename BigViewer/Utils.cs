@@ -6,6 +6,27 @@ namespace BigViewer
 {
     internal static class Utils
     {
+        public static readonly byte[] resourceTypeData = [0x23, 0x22, 0xE0, 0xF4];
+        public static readonly byte[] resourceTypeString = [0xDC, 0xAA, 0x86, 0xF6];
+        public static readonly byte[] resourceTypePng = [0x78, 0x86, 0x17, 0xB7];
+        public static readonly byte[] resourceTypeWav = [0x54, 0x77, 0x8A, 0xFD];
+        public static readonly byte[] resourceTypeMeta = [0x5C, 0xD3, 0xE5, 0x69];
+        public static readonly byte[] resourceTypeLittle = [0x05, 0xC5, 0xE4, 0x69];
+
+        public static readonly byte[] resourceCompressionTypeNone = [0x04, 0x00, 0x00, 0x00];
+        public static readonly byte[] resourceCompressionTypeZlib = [0x04, 0x00, 0x80, 0x00];
+        public static readonly byte[] resourceCompressionTypeZlibMax = [0x78, 0xDA];
+
+        public static readonly byte[] pngStarting = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        public static readonly byte[] pngEnding = [0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82];
+        public static readonly byte[] wavStarting1 = [0x52, 0x49, 0x46, 0x46];
+        public static readonly byte[] wavStarting2 = [0x57, 0x41, 0x56, 0x45];
+
+        public static readonly Regex intRegex = new Regex(@"^-?[1-9][0-9]{0,19}$");
+        public static readonly Regex decRegex = new Regex(@"^-?(0|[1-9][0-9]*)\.[0-9]+$");
+        public static readonly Regex bytesRegex = new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$");
+        public static readonly Regex resultsBoxIdRegex = new Regex(@"^[0-9]+(?=:)");
+
         public static string OpenFilePath(string filter)
         {
             using (OpenFileDialog openDialog = new OpenFileDialog())
@@ -29,7 +50,6 @@ namespace BigViewer
         {
             using (FolderBrowserDialog openDialog = new FolderBrowserDialog())
             {
-                // openDialog.RestoreDirectory = true;
                 if (openDialog.ShowDialog() == DialogResult.OK)
                 {
                     return openDialog.SelectedPath;
@@ -93,9 +113,58 @@ namespace BigViewer
             }
         }
 
-        public static byte[] ConvertStringToBytes(string input)
+        public static int ParseNumber(string input)
         {
-            if ((new Regex(@"^([0-9a-fA-F]{2}-)*([0-9a-fA-F]{2})$")).IsMatch(input))
+            if (intRegex.IsMatch(input))
+            {
+                if (long.TryParse(input, out long result))
+                {
+                    if (short.MinValue <= result && result <= ushort.MaxValue)
+                    {
+                        return 1;
+                    }
+                    else if (int.MinValue <= result && result <= uint.MaxValue)
+                    {
+                        return 2;
+                    }
+                    else
+                    {
+                        return 3;
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else if (decRegex.IsMatch(input))
+            {
+                if (!Half.IsInfinity(Half.Parse(input)))
+                {
+                    return 1;
+                }
+                else if (!float.IsInfinity(float.Parse(input)))
+                {
+                    return 2;
+                }
+                else if (!double.IsInfinity(double.Parse(input)))
+                {
+                    return 3;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public static byte[] ConvertByteString(string input)
+        {
+            if (bytesRegex.IsMatch(input))
             {
                 return input.Split('-').Select((x) => byte.Parse(x, System.Globalization.NumberStyles.HexNumber)).ToArray();
             }
@@ -203,10 +272,8 @@ namespace BigViewer
                     return "png";
                 case [0x54, 0x77, 0x8A, 0xFD]:
                     return "wav";
-                /*
-                case [0x52, 0x49, 0x46, 0x46]:
-                    return "ogg";
-                */
+                case [0x5C, 0xD3, 0xE5, 0x69]:
+                    return "meta";
                 case [0x05, 0xC5, 0xE4, 0x69]:
                     return "little";
                 default:
@@ -222,10 +289,6 @@ namespace BigViewer
                     return "PNG files (*.png)|*.png";
                 case [0x54, 0x77, 0x8A, 0xFD]:
                     return "WAV files (*.wav)|*.wav";
-                /*
-                case [0x52, 0x49, 0x46, 0x46]:
-                    return "OGG files (*.ogg)|*.ogg";
-                */
                 default:
                     return "Data (*.bin)|*.bin";
             }
@@ -239,10 +302,6 @@ namespace BigViewer
                     return ".png";
                 case [0x54, 0x77, 0x8A, 0xFD]:
                     return ".wav";
-                /*
-                case [0x52, 0x49, 0x46, 0x46]:
-                    return "ogg";
-                */
                 default:
                     return ".bin";
             }
@@ -264,12 +323,12 @@ namespace BigViewer
         public static (uint, byte[]) DecodeResource(byte[] data)
         {
             // Check compression type
-            if (data.Length > 0x4 && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x00, 0x00 }))
+            if (data.Length > 0x4 && data[0x0..0x4].SequenceEqual(resourceCompressionTypeNone))
             {
                 // none
                 return (1, data[0x4..]);
             }
-            else if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(new byte[] { 0x04, 0x00, 0x80, 0x00 }) && data[0xC..0xE].SequenceEqual(new byte[] { 0x78, 0xDA }) && BitConverter.ToUInt32(data[0x8..0xC]) == data.Length - 0xC)
+            else if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(resourceCompressionTypeZlib) && data[0xC..0xE].SequenceEqual(resourceCompressionTypeZlibMax) && BitConverter.ToUInt32(data[0x8..0xC]) == data.Length - 0xC)
             {
                 // zlib
                 return (2, DecompZlibData(data[0xC..]));
@@ -287,11 +346,11 @@ namespace BigViewer
             {
                 case 1:
                     // none
-                    return (new byte[] { 0x04, 0x00, 0x00, 0x00 }).Concat(rawData).ToArray();
+                    return resourceCompressionTypeNone.Concat(rawData).ToArray();
                 case 2:
                     // zlib
                     List<byte> result = [];
-                    result.AddRange(new byte[] { 0x04, 0x00, 0x80, 0x00 });
+                    result.AddRange(resourceCompressionTypeZlib);
                     result.AddRange(BitConverter.GetBytes(rawData.Length));
                     byte[] data = CompZlibData(rawData);
                     result.AddRange(BitConverter.GetBytes(data.Length));
@@ -304,7 +363,7 @@ namespace BigViewer
 
         public static bool CheckPNGHeader(byte[] data)
         {
-            if (data.Length > 0x8 && data[0x0..0x8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }) && data[^0x8..^0x0].SequenceEqual(new byte[] { 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 }))
+            if (data.Length > 0x8 && data[0x0..0x8].SequenceEqual(pngStarting) && data[^0x8..^0x0].SequenceEqual(pngEnding))
             {
                 return true;
             }
@@ -316,7 +375,7 @@ namespace BigViewer
 
         public static bool CheckWAVHeader(byte[] data)
         {
-            if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }) && data[0x8..0xC].SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
+            if (data.Length > 0xC && data[0x0..0x4].SequenceEqual(wavStarting1) && data[0x8..0xC].SequenceEqual(wavStarting2))
             {
                 return true;
             }

@@ -1,5 +1,4 @@
-using Microsoft.VisualBasic;
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace BigViewer
 {
@@ -21,27 +20,45 @@ namespace BigViewer
                     Application.OpenForms[i].Close();
                 }
             }
+            Reset();
             string selectedPath = Utils.OpenFilePath("BIG files (*.big)|*.big|All files (*.*)|*.*");
-            try
+            if (selectedPath.Length > 0)
             {
-                Reset();
-                currentFile = new ResourceFile(selectedPath, File.ReadAllBytes(selectedPath));
-                pathBox.Text = selectedPath;
+                try
+                {
+                    currentFile = new ResourceFile(selectedPath, File.ReadAllBytes(selectedPath));
+                    pathBox.Text = selectedPath;
 
-                DisplayInfoUI();
+                    DisplayInfoUI();
 
-                editRawButton.Enabled = true;
-                viewRawButton.Enabled = true;
-                exportSelectedButton.Enabled = true;
-                exportAllButton.Enabled = true;
-                saveFileButton.Enabled = true;
-                searchButton.Enabled = true;
-                replaceButton.Enabled = true;
-            }
-            catch (Exception ex)
-            {
-                Reset();
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    viewRawButton.Enabled = true;
+                    editRawButton.Enabled = true;
+                    replaceButton.Enabled = true;
+                    exportSelectedButton.Enabled = true;
+                    exportAllButton.Enabled = true;
+                    saveFileButton.Enabled = true;
+
+                    searchOptionsGroupBox.Enabled = true;
+                    searchTabControl.Enabled = true;
+                    foreach (Control control in searchTabPageBinary.Controls)
+                    {
+                        control.Enabled = true;
+                    }
+                    searchTabPageNumberInput.Enabled = true;
+                    ChangeSearchTabPageNumberButtons(0);
+                    foreach (Control control in searchTabPageString.Controls)
+                    {
+                        control.Enabled = true;
+                    }
+                    searchTabPageNumberInput.TextChanged += searchTabPageNumberInput_TextChanged;
+
+                    searchDataOnlyCheckBox.Enabled = true;
+                    searchButton.Enabled = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                }
             }
         }
 
@@ -57,7 +74,7 @@ namespace BigViewer
                         bool alreadyOpen = false;
                         foreach (Form childForm in this.OwnedForms)
                         {
-                            if ((int)childForm.Tag == selectedIndex)
+                            if (childForm.Tag != null && (int)childForm.Tag == selectedIndex)
                             {
                                 alreadyOpen = true;
                                 childForm.Focus();
@@ -94,7 +111,7 @@ namespace BigViewer
                         bool alreadyOpen = false;
                         foreach (Form childForm in this.OwnedForms)
                         {
-                            if ((int)childForm.Tag == selectedIndex)
+                            if (childForm.Tag != null && (int)childForm.Tag == selectedIndex)
                             {
                                 alreadyOpen = true;
                                 childForm.Focus();
@@ -119,33 +136,29 @@ namespace BigViewer
             }
         }
 
-        private void searchButton_Click(object sender, EventArgs e)
+        private void replaceButton_Click(object sender, EventArgs e)
         {
             if (currentFile != null)
             {
-                string input = Interaction.InputBox("Enter sequence of bytes to search (separated by -)", "Search");
-                byte[] pattern = Utils.ConvertStringToBytes(input);
-                if (pattern.Length > 0)
+                if (resourceList.SelectedRows.Count == 1)
                 {
-                    resultsBox.Items.Clear();
-                    foreach (Resource res in currentFile.resources)
+                    string selectedPath = Utils.OpenFilePath(Utils.GetFileTypeFilter(currentFile.resources[resourceList.SelectedRows[0].Index].type));
+                    if (selectedPath.Length > 0)
                     {
-                        int[] resu = Utils.FindSequence(res.rawData, pattern);
-                        int resCount = resu.Length;
-                        if (resCount > 0)
+                        try
                         {
-                            string[] searchResults = new string[resCount];
-                            for (int i = 0; i < resCount; i++)
-                            {
-                                searchResults[i] = "0x" + resu[i].ToString("X");
-                            }
-                            resultsBox.Items.Add(res.id.ToString() + ": " + String.Join(", ", searchResults));
+                            currentFile.ReplaceResourceRaw(resourceList.SelectedRows[0].Index, File.ReadAllBytes(selectedPath));
+                            DisplayInfoUI();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                         }
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Invalid input!", "Error");
+                    MessageBox.Show("Number of selected items is incorrect!", "Error");
                 }
             }
         }
@@ -170,10 +183,10 @@ namespace BigViewer
         {
             if (currentFile != null)
             {
-                if (resourceList.SelectedRows.Count == 1)
+                string folderPath = Utils.OpenFolderPath();
+                string fileName = Path.GetFileNameWithoutExtension(pathBox.Text);
+                if (folderPath.Length > 0)
                 {
-                    string folderPath = Utils.OpenFolderPath();
-                    string fileName = Path.GetFileNameWithoutExtension(pathBox.Text);
                     foreach (Resource res in currentFile.resources)
                     {
                         using (FileStream fs = new FileStream(Path.Combine(folderPath, fileName + "_resource" + res.id.ToString() + Utils.GetTypeExt(res.type)), FileMode.Create, FileAccess.Write))
@@ -184,7 +197,7 @@ namespace BigViewer
                 }
                 else
                 {
-                    MessageBox.Show("Number of selected items is incorrect!", "Error");
+                    MessageBox.Show("Invalid Path!", "Error");
                 }
             }
         }
@@ -200,58 +213,199 @@ namespace BigViewer
         private void checksumButton_Click(object sender, EventArgs e)
         {
             string selectedPath = Utils.OpenFilePath("All files (*.*)|*.*");
-            try
+            if (selectedPath.Length > 0)
             {
-                MessageBox.Show(Utils.GetChecksum(File.ReadAllBytes(selectedPath)).ToString(), "Result");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                try
+                {
+                    long check = Utils.GetChecksum(File.ReadAllBytes(selectedPath));
+                    MessageBox.Show("0x" + check.ToString("X") + "\n" + check.ToString(), "Result");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                }
             }
         }
 
-        private void replaceButton_Click(object sender, EventArgs e)
+        private void searchButton_Click(object sender, EventArgs e)
         {
-            if (currentFile != null)
+            if (searchTabControl.TabPages[searchTabControl.SelectedIndex] == searchTabPageBinary)
             {
-                if (resourceList.SelectedRows.Count == 1)
+                SearchAndDisplayResult(Utils.ConvertByteString(searchTabPageBinaryInput.Text));
+            }
+            else if (searchTabControl.TabPages[searchTabControl.SelectedIndex] == searchTabPageNumber)
+            {
+                if (searchTabPageNumber16Bit.Checked == true)
                 {
-                    string selectedPath = Utils.OpenFilePath(Utils.GetFileTypeFilter(currentFile.resources[resourceList.SelectedRows[0].Index].type));
+                    if (searchTabPageNumberInput.Text.Contains('.'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(Half.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else if (searchTabPageNumberInput.Text.Contains('-'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(short.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(ushort.Parse(searchTabPageNumberInput.Text)));
+                    }
+                }
+                else if (searchTabPageNumber32Bit.Checked == true)
+                {
+                    if (searchTabPageNumberInput.Text.Contains('.'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(float.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else if (searchTabPageNumberInput.Text.Contains('-'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(int.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(uint.Parse(searchTabPageNumberInput.Text)));
+                    }
+                }
+                else if (searchTabPageNumber64Bit.Checked == true)
+                {
+                    if (searchTabPageNumberInput.Text.Contains('.'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(double.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(long.Parse(searchTabPageNumberInput.Text)));
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No length selected!", "Error");
+                }
+            }
+            else if (searchTabControl.TabPages[searchTabControl.SelectedIndex] == searchTabPageString)
+            {
+                if (searchTabPageStringLatin.Checked == true)
+                {
                     try
                     {
-                        currentFile.ReplaceResourceRaw(resourceList.SelectedRows[0].Index, File.ReadAllBytes(selectedPath));
-                        DisplayInfoUI();
+                        SearchAndDisplayResult(Encoding.Latin1.GetBytes(searchTabPageStringInput.Text));
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                     }
                 }
-                else
+                else if (searchTabPageStringUTF16.Checked == true)
                 {
-                    MessageBox.Show("Number of selected items is incorrect!", "Error");
+                    try
+                    {
+                        SearchAndDisplayResult(Encoding.Unicode.GetBytes(searchTabPageStringInput.Text));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
                 }
             }
         }
 
         private void resultsBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            resourceList.CurrentCell = resourceList.Rows[int.Parse((new Regex(@"[0-9]+(?=:)")).Match(resultsBox.GetItemText(resultsBox.SelectedItem) ?? "0:").Value)].Cells[0];
+            resourceList.CurrentCell = resourceList.Rows[int.Parse(Utils.resultsBoxIdRegex.Match(resultsBox.GetItemText(resultsBox.SelectedItem) ?? "0:").Value)].Cells[0];
+        }
+
+        private void resourceList_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // Handle the right click
+            if (e.Button == MouseButtons.Right)
+            {
+                resourceList.Rows[e.RowIndex].Selected = true;
+                resourceList.CurrentCell = resourceList.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                resourceListContextMenu.Show(Cursor.Position);
+            }
+        }
+
+        private void searchTabPageNumberInput_TextChanged(object? sender, EventArgs e)
+        {
+            ChangeSearchTabPageNumberButtons(Utils.ParseNumber(searchTabPageNumberInput.Text));
+        }
+
+        private void ChangeSearchTabPageNumberButtons(int mode)
+        {
+            switch (mode)
+            {
+                case 1:
+                    searchTabPageNumber16Bit.Enabled = true;
+                    searchTabPageNumber32Bit.Enabled = true;
+                    searchTabPageNumber64Bit.Enabled = true;
+                    return;
+                case 2:
+                    searchTabPageNumber16Bit.Checked = false;
+                    searchTabPageNumber16Bit.Enabled = false;
+                    searchTabPageNumber32Bit.Enabled = true;
+                    searchTabPageNumber64Bit.Enabled = true;
+                    return;
+                case 3:
+                    searchTabPageNumber16Bit.Checked = false;
+                    searchTabPageNumber32Bit.Checked = false;
+                    searchTabPageNumber16Bit.Enabled = false;
+                    searchTabPageNumber32Bit.Enabled = false;
+                    searchTabPageNumber64Bit.Enabled = true;
+                    return;
+                default:
+                    searchTabPageNumber16Bit.Checked = false;
+                    searchTabPageNumber32Bit.Checked = false;
+                    searchTabPageNumber64Bit.Checked = false;
+                    searchTabPageNumber16Bit.Enabled = false;
+                    searchTabPageNumber32Bit.Enabled = false;
+                    searchTabPageNumber64Bit.Enabled = false;
+                    return;
+            }
+        }
+
+        private void SearchAndDisplayResult(byte[] pattern)
+        {
+            if (currentFile != null && pattern.Length > 0)
+            {
+                resultsBox.Items.Clear();
+                foreach (Resource res in searchDataOnlyCheckBox.Checked ? currentFile.resources.Where((x) => { return x.type.SequenceEqual(Utils.resourceTypeData); }) : currentFile.resources)
+                {
+                    int[] resu = Utils.FindSequence(res.rawData, pattern);
+                    int resCount = resu.Length;
+                    if (resCount > 0)
+                    {
+                        string[] searchResults = new string[resCount];
+                        for (int i = 0; i < resCount; i++)
+                        {
+                            searchResults[i] = "0x" + resu[i].ToString("X");
+                        }
+                        resultsBox.Items.Add(res.id.ToString() + ": " + string.Join(", ", searchResults));
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Invalid input!", "Error");
+            }
         }
 
         private void DisplayInfoUI()
         {
             if (currentFile != null)
             {
+                int prevSelect = -1;
+                if (resourceList.SelectedRows.Count == 1)
+                {
+                    prevSelect = resourceList.SelectedRows[0].Index;
+                }
                 infoBox.Items.Clear();
                 resultsBox.Items.Clear();
                 resourceList.Rows.Clear();
                 // Display file info
                 infoBox.Items.Add("Resource count: " + currentFile.resourceCount.ToString());
                 infoBox.Items.Add("Header size: " + "0x" + currentFile.headerSize.ToString("X"));
+                infoBox.Items.Add("Additional header count: " + currentFile.addHeaderCount.ToString());
                 infoBox.Items.Add("TOC start: " + "0x" + currentFile.tableStart.ToString("X"));
                 infoBox.Items.Add("Content start: " + "0x" + currentFile.tableEnd.ToString("X"));
-
                 // Populate DataGridView using resource list
                 foreach (Resource res in currentFile.resources)
                 {
@@ -259,6 +413,12 @@ namespace BigViewer
                 }
                 resourceList.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
                 resourceList.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
+                // Return to previously selected row
+                if (prevSelect > 0)
+                {
+                    resourceList.Rows[prevSelect].Selected = true;
+                    resourceList.CurrentCell = resourceList.Rows[prevSelect].Cells[0];
+                }
             }
         }
 
@@ -275,8 +435,24 @@ namespace BigViewer
             exportSelectedButton.Enabled = false;
             exportAllButton.Enabled = false;
             saveFileButton.Enabled = false;
-            searchButton.Enabled = false;
             replaceButton.Enabled = false;
+
+            searchTabPageNumberInput.TextChanged -= searchTabPageNumberInput_TextChanged;
+            foreach (Control control in searchTabPageBinary.Controls)
+            {
+                control.Enabled = false;
+            }
+            searchTabPageNumberInput.Enabled = false;
+            ChangeSearchTabPageNumberButtons(0);
+            foreach (Control control in searchTabPageString.Controls)
+            {
+                control.Enabled = false;
+            }
+            searchTabControl.Enabled = false;
+
+            searchDataOnlyCheckBox.Enabled = false;
+            searchButton.Enabled = false;
+            searchOptionsGroupBox.Enabled = false;
         }
     }
 }

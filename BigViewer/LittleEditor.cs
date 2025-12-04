@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualBasic;
+﻿using System.Text;
 
 namespace BigViewer
 {
@@ -41,13 +41,29 @@ namespace BigViewer
 
             DisplayInfoUI();
 
-            editRawButton.Enabled = true;
             viewRawButton.Enabled = true;
-            exportSelectedButton.Enabled = true;
-            searchButton.Enabled = true;
+            editRawButton.Enabled = true;
             replaceButton.Enabled = true;
+            exportSelectedButton.Enabled = true;
+            exportAllButton.Enabled = true;
             saveButton.Enabled = true;
-            cancelButton.Enabled = true;
+
+            searchOptionsGroupBox.Enabled = true;
+            searchTabControl.Enabled = true;
+            foreach (Control control in searchTabPageBinary.Controls)
+            {
+                control.Enabled = true;
+            }
+            searchTabPageNumberInput.Enabled = true;
+            ChangeSearchTabPageNumberButtons(0);
+            foreach (Control control in searchTabPageString.Controls)
+            {
+                control.Enabled = true;
+            }
+            searchTabPageNumberInput.TextChanged += searchTabPageNumberInput_TextChanged;
+
+            searchDataOnlyCheckBox.Enabled = true;
+            searchButton.Enabled = true;
         }
 
         // Editing resource from parent LittleResourceFile
@@ -81,13 +97,29 @@ namespace BigViewer
 
             DisplayInfoUI();
 
-            editRawButton.Enabled = true;
             viewRawButton.Enabled = true;
-            exportSelectedButton.Enabled = true;
-            searchButton.Enabled = true;
+            editRawButton.Enabled = true;
             replaceButton.Enabled = true;
+            exportSelectedButton.Enabled = true;
+            exportAllButton.Enabled = true;
             saveButton.Enabled = true;
-            cancelButton.Enabled = true;
+
+            searchOptionsGroupBox.Enabled = true;
+            searchTabControl.Enabled = true;
+            foreach (Control control in searchTabPageBinary.Controls)
+            {
+                control.Enabled = true;
+            }
+            searchTabPageNumberInput.Enabled = true;
+            ChangeSearchTabPageNumberButtons(0);
+            foreach (Control control in searchTabPageString.Controls)
+            {
+                control.Enabled = true;
+            }
+            searchTabPageNumberInput.TextChanged += searchTabPageNumberInput_TextChanged;
+
+            searchDataOnlyCheckBox.Enabled = true;
+            searchButton.Enabled = true;
         }
 
         private void viewRawButton_Click(object sender, EventArgs e)
@@ -102,7 +134,7 @@ namespace BigViewer
                         bool alreadyOpen = false;
                         foreach (Form childForm in this.OwnedForms)
                         {
-                            if ((int)childForm.Tag == selectedIndex)
+                            if (childForm.Tag != null && (int)childForm.Tag == selectedIndex)
                             {
                                 alreadyOpen = true;
                                 childForm.Focus();
@@ -139,7 +171,7 @@ namespace BigViewer
                         bool alreadyOpen = false;
                         foreach (Form childForm in this.OwnedForms)
                         {
-                            if ((int)childForm.Tag == selectedIndex)
+                            if (childForm.Tag != null && (int)childForm.Tag == selectedIndex)
                             {
                                 alreadyOpen = true;
                                 childForm.Focus();
@@ -164,33 +196,29 @@ namespace BigViewer
             }
         }
 
-        private void searchButton_Click(object sender, EventArgs e)
+        private void replaceButton_Click(object sender, EventArgs e)
         {
             if (currentLittleFile != null)
             {
-                string input = Interaction.InputBox("Enter sequence of bytes to search (separated by -)", "Search");
-                byte[] pattern = Utils.ConvertStringToBytes(input);
-                if (pattern.Length > 0)
+                if (resourceList.SelectedRows.Count == 1)
                 {
-                    resultsBox.Items.Clear();
-                    foreach (Resource res in currentLittleFile.resources)
+                    string selectedPath = Utils.OpenFilePath(Utils.GetFileTypeFilter(currentLittleFile.resources[resourceList.SelectedRows[0].Index].type));
+                    if (selectedPath.Length > 0)
                     {
-                        int[] resu = Utils.FindSequence(res.rawData, pattern);
-                        int resCount = resu.Length;
-                        if (resCount > 0)
+                        try
                         {
-                            string[] searchResults = new string[resCount];
-                            for (int i = 0; i < resCount; i++)
-                            {
-                                searchResults[i] = "0x" + resu[i].ToString("X");
-                            }
-                            resultsBox.Items.Add(res.id.ToString() + ": " + String.Join(", ", searchResults));
+                            currentLittleFile.ReplaceResourceRaw(resourceList.SelectedRows[0].Index, File.ReadAllBytes(selectedPath));
+                            DisplayInfoUI();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
                         }
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Invalid input!", "Error");
+                    MessageBox.Show("Number of selected items is incorrect!", "Error");
                 }
             }
         }
@@ -211,26 +239,25 @@ namespace BigViewer
             }
         }
 
-        private void replaceButton_Click(object sender, EventArgs e)
+        private void exportAllButton_Click(object sender, EventArgs e)
         {
             if (currentLittleFile != null)
             {
-                if (resourceList.SelectedRows.Count == 1)
+                string folderPath = Utils.OpenFolderPath();
+                // string fileName = Path.GetFileNameWithoutExtension(pathBox.Text);
+                if (folderPath.Length > 0)
                 {
-                    string selectedPath = Utils.OpenFilePath(Utils.GetFileTypeFilter(currentLittleFile.resources[resourceList.SelectedRows[0].Index].type));
-                    try
+                    foreach (Resource res in currentLittleFile.resources)
                     {
-                        currentLittleFile.ReplaceResourceRaw(resourceList.SelectedRows[0].Index, File.ReadAllBytes(selectedPath));
-                        DisplayInfoUI();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                        using (FileStream fs = new FileStream(Path.Combine(folderPath, "res_" + idInParent.ToString() + "_littleresource" + res.id.ToString() + Utils.GetTypeExt(res.type)), FileMode.Create, FileAccess.Write))
+                        {
+                            fs.Write(res.rawData, 0, res.rawData.Length);
+                        }
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Number of selected items is incorrect!", "Error");
+                    MessageBox.Show("Invalid Path!", "Error");
                 }
             }
         }
@@ -258,10 +285,176 @@ namespace BigViewer
             Close();
         }
 
+        private void searchButton_Click(object sender, EventArgs e)
+        {
+            if (searchTabControl.TabPages[searchTabControl.SelectedIndex] == searchTabPageBinary)
+            {
+                SearchAndDisplayResult(Utils.ConvertByteString(searchTabPageBinaryInput.Text));
+            }
+            else if (searchTabControl.TabPages[searchTabControl.SelectedIndex] == searchTabPageNumber)
+            {
+                if (searchTabPageNumber16Bit.Checked == true)
+                {
+                    if (searchTabPageNumberInput.Text.Contains('.'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(Half.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else if (searchTabPageNumberInput.Text.Contains('-'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(short.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(ushort.Parse(searchTabPageNumberInput.Text)));
+                    }
+                }
+                else if (searchTabPageNumber32Bit.Checked == true)
+                {
+                    if (searchTabPageNumberInput.Text.Contains('.'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(float.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else if (searchTabPageNumberInput.Text.Contains('-'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(int.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(uint.Parse(searchTabPageNumberInput.Text)));
+                    }
+                }
+                else if (searchTabPageNumber64Bit.Checked == true)
+                {
+                    if (searchTabPageNumberInput.Text.Contains('.'))
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(double.Parse(searchTabPageNumberInput.Text)));
+                    }
+                    else
+                    {
+                        SearchAndDisplayResult(BitConverter.GetBytes(long.Parse(searchTabPageNumberInput.Text)));
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No length selected!", "Error");
+                }
+            }
+            else if (searchTabControl.TabPages[searchTabControl.SelectedIndex] == searchTabPageString)
+            {
+                if (searchTabPageStringLatin.Checked == true)
+                {
+                    try
+                    {
+                        SearchAndDisplayResult(Encoding.Latin1.GetBytes(searchTabPageStringInput.Text));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                }
+                else if (searchTabPageStringUTF16.Checked == true)
+                {
+                    try
+                    {
+                        SearchAndDisplayResult(Encoding.Unicode.GetBytes(searchTabPageStringInput.Text));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error");
+                    }
+                }
+            }
+        }
+
+        private void resultsBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            resourceList.CurrentCell = resourceList.Rows[int.Parse(Utils.resultsBoxIdRegex.Match(resultsBox.GetItemText(resultsBox.SelectedItem) ?? "0:").Value)].Cells[0];
+        }
+
+        private void resourceList_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // Handle the right click
+            if (e.Button == MouseButtons.Right)
+            {
+                resourceList.Rows[e.RowIndex].Selected = true;
+                resourceList.CurrentCell = resourceList.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                resourceListContextMenu.Show(Cursor.Position);
+            }
+        }
+
+        private void searchTabPageNumberInput_TextChanged(object? sender, EventArgs e)
+        {
+            ChangeSearchTabPageNumberButtons(Utils.ParseNumber(searchTabPageNumberInput.Text));
+        }
+
+        private void ChangeSearchTabPageNumberButtons(int mode)
+        {
+            switch (mode)
+            {
+                case 1:
+                    searchTabPageNumber16Bit.Enabled = true;
+                    searchTabPageNumber32Bit.Enabled = true;
+                    searchTabPageNumber64Bit.Enabled = true;
+                    return;
+                case 2:
+                    searchTabPageNumber16Bit.Checked = false;
+                    searchTabPageNumber16Bit.Enabled = false;
+                    searchTabPageNumber32Bit.Enabled = true;
+                    searchTabPageNumber64Bit.Enabled = true;
+                    return;
+                case 3:
+                    searchTabPageNumber16Bit.Checked = false;
+                    searchTabPageNumber32Bit.Checked = false;
+                    searchTabPageNumber16Bit.Enabled = false;
+                    searchTabPageNumber32Bit.Enabled = false;
+                    searchTabPageNumber64Bit.Enabled = true;
+                    return;
+                default:
+                    searchTabPageNumber16Bit.Checked = false;
+                    searchTabPageNumber32Bit.Checked = false;
+                    searchTabPageNumber64Bit.Checked = false;
+                    searchTabPageNumber16Bit.Enabled = false;
+                    searchTabPageNumber32Bit.Enabled = false;
+                    searchTabPageNumber64Bit.Enabled = false;
+                    return;
+            }
+        }
+
+        private void SearchAndDisplayResult(byte[] pattern)
+        {
+            if (currentLittleFile != null && pattern.Length > 0)
+            {
+                resultsBox.Items.Clear();
+                foreach (Resource res in searchDataOnlyCheckBox.Checked ? currentLittleFile.resources.Where((x) => { return x.type.SequenceEqual(Utils.resourceTypeData); }) : currentLittleFile.resources)
+                {
+                    int[] resu = Utils.FindSequence(res.rawData, pattern);
+                    int resCount = resu.Length;
+                    if (resCount > 0)
+                    {
+                        string[] searchResults = new string[resCount];
+                        for (int i = 0; i < resCount; i++)
+                        {
+                            searchResults[i] = "0x" + resu[i].ToString("X");
+                        }
+                        resultsBox.Items.Add(res.id.ToString() + ": " + string.Join(", ", searchResults));
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Invalid input!", "Error");
+            }
+        }
+
         private void DisplayInfoUI()
         {
             if (currentLittleFile != null)
             {
+                int prevSelect = -1;
+                if (resourceList.SelectedRows.Count == 1)
+                {
+                    prevSelect = resourceList.SelectedRows[0].Index;
+                }
                 infoBox.Items.Clear();
                 resultsBox.Items.Clear();
                 resourceList.Rows.Clear();
@@ -271,7 +464,6 @@ namespace BigViewer
                 infoBox.Items.Add("Resource count: " + currentLittleFile.resourceCount.ToString());
                 infoBox.Items.Add("Type TOC start: " + "0x" + currentLittleFile.typeTableStart.ToString("X"));
                 infoBox.Items.Add("Content start: " + "0x" + currentLittleFile.typeTableEnd.ToString("X"));
-
                 // Populate DataGridView using resource list
                 if (!currentLittleFile.isCore)
                 {
@@ -286,8 +478,9 @@ namespace BigViewer
                     otherData.HeaderText = "Other Data";
                     otherData.MinimumWidth = 8;
                     otherData.Name = "OtherData";
-                    otherData.ReadOnly = true;
+                    // otherData.ReadOnly = true;
                     otherData.Resizable = DataGridViewTriState.False;
+                    otherData.SortMode = DataGridViewColumnSortMode.NotSortable;
                     resourceList.Columns.Add(otherData);
                     foreach (Resource res in currentLittleFile.resources)
                     {
@@ -296,6 +489,12 @@ namespace BigViewer
                 }
                 resourceList.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
                 resourceList.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
+                // Return to previously selected row
+                if (prevSelect > 0)
+                {
+                    resourceList.Rows[prevSelect].Selected = true;
+                    resourceList.CurrentCell = resourceList.Rows[prevSelect].Cells[0];
+                }
             }
         }
     }
