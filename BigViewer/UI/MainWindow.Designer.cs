@@ -1,6 +1,6 @@
-﻿namespace BigViewer
+﻿namespace BigViewer.UI
 {
-    partial class LittleEditor
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,9 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            openFileButton = new Button();
             editRawButton = new Button();
+            pathBox = new TextBox();
             resourceList = new DataGridView();
             ItemNumber = new DataGridViewTextBoxColumn();
             Type = new DataGridViewTextBoxColumn();
@@ -46,9 +48,10 @@
             searchButton = new Button();
             resultsBox = new ListBox();
             exportSelectedButton = new Button();
+            checksumButton = new Button();
             replaceButton = new Button();
             viewRawButton = new Button();
-            saveButton = new Button();
+            saveFileButton = new Button();
             exportAllButton = new Button();
             searchOptionsGroupBox = new GroupBox();
             searchDataOnlyCheckBox = new CheckBox();
@@ -65,7 +68,6 @@
             searchTabPageStringLatin = new RadioButton();
             searchTabPageStringInput = new TextBox();
             fileOptionsGroupBox = new GroupBox();
-            cancelButton = new Button();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             resourceListContextMenu.SuspendLayout();
             searchOptionsGroupBox.SuspendLayout();
@@ -75,6 +77,16 @@
             searchTabPageString.SuspendLayout();
             fileOptionsGroupBox.SuspendLayout();
             SuspendLayout();
+            // 
+            // openFileButton
+            // 
+            openFileButton.Location = new Point(12, 12);
+            openFileButton.Name = "openFileButton";
+            openFileButton.Size = new Size(112, 34);
+            openFileButton.TabIndex = 0;
+            openFileButton.Text = "Open";
+            openFileButton.UseVisualStyleBackColor = true;
+            openFileButton.Click += openFileButton_Click;
             // 
             // editRawButton
             // 
@@ -87,6 +99,17 @@
             editRawButton.Text = "Edit Raw";
             editRawButton.UseVisualStyleBackColor = true;
             editRawButton.Click += editRawButton_Click;
+            // 
+            // pathBox
+            // 
+            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pathBox.BorderStyle = BorderStyle.FixedSingle;
+            pathBox.Location = new Point(130, 14);
+            pathBox.Name = "pathBox";
+            pathBox.ReadOnly = true;
+            pathBox.Size = new Size(860, 31);
+            pathBox.TabIndex = 1;
+            pathBox.TabStop = false;
             // 
             // resourceList
             // 
@@ -101,7 +124,7 @@
             resourceList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, FileSize, RawSize, Format });
             resourceList.EditMode = DataGridViewEditMode.EditProgrammatically;
-            resourceList.Location = new Point(12, 12);
+            resourceList.Location = new Point(12, 52);
             resourceList.MultiSelect = false;
             resourceList.Name = "resourceList";
             resourceList.ReadOnly = true;
@@ -257,6 +280,17 @@
             exportSelectedButton.UseVisualStyleBackColor = true;
             exportSelectedButton.Click += exportSelectedButton_Click;
             // 
+            // checksumButton
+            // 
+            checksumButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            checksumButton.Location = new Point(6, 268);
+            checksumButton.Name = "checksumButton";
+            checksumButton.Size = new Size(230, 34);
+            checksumButton.TabIndex = 9;
+            checksumButton.Text = "Calculate Checksum";
+            checksumButton.UseVisualStyleBackColor = true;
+            checksumButton.Click += checksumButton_Click;
+            // 
             // replaceButton
             // 
             replaceButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -281,17 +315,17 @@
             viewRawButton.UseVisualStyleBackColor = true;
             viewRawButton.Click += viewRawButton_Click;
             // 
-            // saveButton
+            // saveFileButton
             // 
-            saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            saveButton.Enabled = false;
-            saveButton.Location = new Point(754, 818);
-            saveButton.Name = "saveButton";
-            saveButton.Size = new Size(112, 34);
-            saveButton.TabIndex = 10;
-            saveButton.Text = "Save";
-            saveButton.UseVisualStyleBackColor = true;
-            saveButton.Click += saveButton_Click;
+            saveFileButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            saveFileButton.Enabled = false;
+            saveFileButton.Location = new Point(242, 268);
+            saveFileButton.Name = "saveFileButton";
+            saveFileButton.Size = new Size(112, 34);
+            saveFileButton.TabIndex = 10;
+            saveFileButton.Text = "Save File";
+            saveFileButton.UseVisualStyleBackColor = true;
+            saveFileButton.Click += saveFileButton_Click;
             // 
             // exportAllButton
             // 
@@ -313,7 +347,7 @@
             searchOptionsGroupBox.Controls.Add(searchButton);
             searchOptionsGroupBox.Controls.Add(resultsBox);
             searchOptionsGroupBox.Enabled = false;
-            searchOptionsGroupBox.Location = new Point(630, 286);
+            searchOptionsGroupBox.Location = new Point(630, 366);
             searchOptionsGroupBox.Name = "searchOptionsGroupBox";
             searchOptionsGroupBox.Size = new Size(360, 526);
             searchOptionsGroupBox.TabIndex = 11;
@@ -483,41 +517,32 @@
             fileOptionsGroupBox.Controls.Add(infoBox);
             fileOptionsGroupBox.Controls.Add(viewRawButton);
             fileOptionsGroupBox.Controls.Add(editRawButton);
+            fileOptionsGroupBox.Controls.Add(saveFileButton);
             fileOptionsGroupBox.Controls.Add(exportAllButton);
+            fileOptionsGroupBox.Controls.Add(checksumButton);
             fileOptionsGroupBox.Controls.Add(replaceButton);
             fileOptionsGroupBox.Controls.Add(exportSelectedButton);
-            fileOptionsGroupBox.Location = new Point(630, 12);
+            fileOptionsGroupBox.Location = new Point(630, 52);
             fileOptionsGroupBox.Name = "fileOptionsGroupBox";
-            fileOptionsGroupBox.Size = new Size(360, 268);
+            fileOptionsGroupBox.Size = new Size(360, 308);
             fileOptionsGroupBox.TabIndex = 3;
             fileOptionsGroupBox.TabStop = false;
             fileOptionsGroupBox.Text = "File";
             // 
-            // cancelButton
-            // 
-            cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            cancelButton.Location = new Point(878, 818);
-            cancelButton.Name = "cancelButton";
-            cancelButton.Size = new Size(112, 34);
-            cancelButton.TabIndex = 12;
-            cancelButton.Text = "Cancel";
-            cancelButton.UseVisualStyleBackColor = true;
-            cancelButton.Click += cancelButton_Click;
-            // 
-            // LittleEditor
+            // MainWindow
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(1002, 864);
-            Controls.Add(cancelButton);
+            ClientSize = new Size(1002, 904);
             Controls.Add(fileOptionsGroupBox);
             Controls.Add(searchOptionsGroupBox);
-            Controls.Add(saveButton);
             Controls.Add(resourceList);
+            Controls.Add(pathBox);
+            Controls.Add(openFileButton);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            Name = "LittleEditor";
+            Name = "MainWindow";
             Text = "Big Viewer";
             ((System.ComponentModel.ISupportInitialize)resourceList).EndInit();
             resourceListContextMenu.ResumeLayout(false);
@@ -532,18 +557,23 @@
             searchTabPageString.PerformLayout();
             fileOptionsGroupBox.ResumeLayout(false);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private Button openFileButton;
         private Button editRawButton;
+        private TextBox pathBox;
         private DataGridView resourceList;
         private ListBox infoBox;
         private Button searchButton;
         private ListBox resultsBox;
         private Button exportSelectedButton;
+        private Button checksumButton;
         private Button replaceButton;
         private Button viewRawButton;
-        private Button saveButton;
+        private Button saveFileButton;
         private Button exportAllButton;
         private ContextMenuStrip resourceListContextMenu;
         private ToolStripMenuItem resourceListContextMenuItemViewRaw;
@@ -571,6 +601,5 @@
         private CheckBox searchDataOnlyCheckBox;
         private RadioButton searchTabPageStringLatin;
         private RadioButton searchTabPageStringUTF16;
-        private Button cancelButton;
     }
 }

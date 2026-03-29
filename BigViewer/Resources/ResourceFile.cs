@@ -1,4 +1,6 @@
-﻿namespace BigViewer
+﻿using BigViewer.Common;
+
+namespace BigViewer.Resources
 {
     internal class ResourceFile
     {

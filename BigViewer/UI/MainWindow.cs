@@ -1,6 +1,9 @@
 using System.Text;
 
-namespace BigViewer
+using BigViewer.Common;
+using BigViewer.Resources;
+
+namespace BigViewer.UI
 {
     public partial class MainWindow : Form
     {

@@ -1,6 +1,9 @@
-﻿using Be.Windows.Forms;
+﻿using BigViewer.Common;
+using BigViewer.Resources;
 
-namespace BigViewer
+using Be.Windows.Forms;
+
+namespace BigViewer.UI
 {
     internal partial class HexEditor : Form
     {

@@ -1,6 +1,9 @@
 ﻿using System.Text;
 
-namespace BigViewer
+using BigViewer.Common;
+using BigViewer.Resources;
+
+namespace BigViewer.UI
 {
     internal partial class LittleEditor : Form
     {

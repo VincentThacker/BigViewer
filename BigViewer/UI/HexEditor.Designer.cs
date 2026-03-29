@@ -1,6 +1,6 @@
 ﻿using Be.Windows.Forms;
 
-namespace BigViewer
+namespace BigViewer.UI
 {
     partial class HexEditor
     {

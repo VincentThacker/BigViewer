@@ -2,7 +2,10 @@
 using System.Media;
 using System.Text.RegularExpressions;
 
-namespace BigViewer
+using BigViewer.Resources;
+using BigViewer.UI;
+
+namespace BigViewer.Common
 {
     internal static class Utils
     {
