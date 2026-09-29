@@ -50,9 +50,9 @@ namespace BigViewer.Core
                 }
                 set
                 {
+                    data = Common.EncodeResource(rawData, value);
                     format = value;
                     FormatName = Common.GetFormatName(format);
-                    data = Common.EncodeResource(rawData, format);
                 }
             }
             public string FormatName { get; private set; }

@@ -49,7 +49,7 @@ namespace BigViewer.UI
             hexBox.MinimumSize = new Size(862, 0);
             hexBox.Name = "hexBox";
             hexBox.ReadOnly = true;
-            hexBox.Size = new Size(862, 960);
+            hexBox.Size = new Size(1116, 960);
             hexBox.StringViewVisible = true;
             hexBox.TabIndex = 0;
             hexBox.UseFixedBytesPerLine = true;
@@ -59,7 +59,7 @@ namespace BigViewer.UI
             // 
             saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             saveButton.Enabled = false;
-            saveButton.Location = new Point(880, 938);
+            saveButton.Location = new Point(1134, 938);
             saveButton.Name = "saveButton";
             saveButton.Size = new Size(112, 34);
             saveButton.TabIndex = 1;
@@ -71,7 +71,7 @@ namespace BigViewer.UI
             // 
             cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             cancelButton.Enabled = false;
-            cancelButton.Location = new Point(880, 978);
+            cancelButton.Location = new Point(1134, 978);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new Size(112, 34);
             cancelButton.TabIndex = 2;
@@ -82,7 +82,7 @@ namespace BigViewer.UI
             // searchButton
             // 
             searchButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            searchButton.Location = new Point(880, 12);
+            searchButton.Location = new Point(1134, 12);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(112, 34);
             searchButton.TabIndex = 3;
@@ -96,7 +96,7 @@ namespace BigViewer.UI
             searchBox.BorderStyle = BorderStyle.FixedSingle;
             searchBox.Location = new Point(12, 14);
             searchBox.Name = "searchBox";
-            searchBox.Size = new Size(862, 31);
+            searchBox.Size = new Size(1116, 31);
             searchBox.TabIndex = 4;
             // 
             // resultsBox
@@ -104,7 +104,7 @@ namespace BigViewer.UI
             resultsBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             resultsBox.FormattingEnabled = true;
             resultsBox.HorizontalScrollbar = true;
-            resultsBox.Location = new Point(880, 52);
+            resultsBox.Location = new Point(1134, 52);
             resultsBox.Name = "resultsBox";
             resultsBox.Size = new Size(112, 879);
             resultsBox.TabIndex = 5;
@@ -114,14 +114,13 @@ namespace BigViewer.UI
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1004, 1024);
+            ClientSize = new Size(1258, 1024);
             Controls.Add(resultsBox);
             Controls.Add(searchBox);
             Controls.Add(searchButton);
             Controls.Add(cancelButton);
             Controls.Add(saveButton);
             Controls.Add(hexBox);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "HexEditor";
             ResumeLayout(false);
             PerformLayout();
