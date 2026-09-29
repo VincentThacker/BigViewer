@@ -82,7 +82,7 @@
             virtualId.ReadOnly = true;
             virtualId.Resizable = DataGridViewTriState.False;
             virtualId.SortMode = DataGridViewColumnSortMode.NotSortable;
-            virtualId.Width = 101;
+            virtualId.Width = 68;
             // 
             // realId
             // 
