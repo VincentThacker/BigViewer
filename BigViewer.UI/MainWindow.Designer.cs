@@ -1,6 +1,6 @@
 ﻿namespace BigViewer.UI
 {
-    partial class LittleEditor
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,9 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            openFileButton = new Button();
             editRawButton = new Button();
+            pathBox = new TextBox();
             resourceList = new DataGridView();
             ItemNumber = new DataGridViewTextBoxColumn();
             Type = new DataGridViewTextBoxColumn();
@@ -45,11 +47,8 @@
             infoBox = new ListBox();
             searchButton = new Button();
             resultsBox = new ListBox();
-            exportSelectedButton = new Button();
             replaceButton = new Button();
             viewRawButton = new Button();
-            saveButton = new Button();
-            exportAllButton = new Button();
             searchOptionsGroupBox = new GroupBox();
             searchDataOnlyCheckBox = new CheckBox();
             searchTabControl = new TabControl();
@@ -65,7 +64,14 @@
             searchTabPageStringLatin = new RadioButton();
             searchTabPageStringInput = new TextBox();
             fileOptionsGroupBox = new GroupBox();
-            cancelButton = new Button();
+            menuStrip = new MenuStrip();
+            fileToolStripMenuItem = new ToolStripMenuItem();
+            openFileToolStripMenuItem = new ToolStripMenuItem();
+            exportSelectedToolStripMenuItem = new ToolStripMenuItem();
+            exportAllToolStripMenuItem = new ToolStripMenuItem();
+            saveFileToolStripMenuItem = new ToolStripMenuItem();
+            toolsToolStripMenuItem = new ToolStripMenuItem();
+            additionalInfoToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)resourceList).BeginInit();
             resourceListContextMenu.SuspendLayout();
             searchOptionsGroupBox.SuspendLayout();
@@ -74,19 +80,41 @@
             searchTabPageNumber.SuspendLayout();
             searchTabPageString.SuspendLayout();
             fileOptionsGroupBox.SuspendLayout();
+            menuStrip.SuspendLayout();
             SuspendLayout();
+            // 
+            // openFileButton
+            // 
+            openFileButton.Location = new Point(12, 44);
+            openFileButton.Name = "openFileButton";
+            openFileButton.Size = new Size(112, 34);
+            openFileButton.TabIndex = 0;
+            openFileButton.Text = "Open";
+            openFileButton.UseVisualStyleBackColor = true;
+            openFileButton.Click += openFileToolStripMenuItem_Click;
             // 
             // editRawButton
             // 
             editRawButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             editRawButton.Enabled = false;
-            editRawButton.Location = new Point(124, 188);
+            editRawButton.Location = new Point(124, 268);
             editRawButton.Name = "editRawButton";
             editRawButton.Size = new Size(112, 34);
             editRawButton.TabIndex = 5;
             editRawButton.Text = "Edit Raw";
             editRawButton.UseVisualStyleBackColor = true;
             editRawButton.Click += editRawButton_Click;
+            // 
+            // pathBox
+            // 
+            pathBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pathBox.BorderStyle = BorderStyle.FixedSingle;
+            pathBox.Location = new Point(130, 46);
+            pathBox.Name = "pathBox";
+            pathBox.ReadOnly = true;
+            pathBox.Size = new Size(860, 31);
+            pathBox.TabIndex = 1;
+            pathBox.TabStop = false;
             // 
             // resourceList
             // 
@@ -101,12 +129,13 @@
             resourceList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             resourceList.Columns.AddRange(new DataGridViewColumn[] { ItemNumber, Type, Offset, FileSize, RawSize, Format });
             resourceList.EditMode = DataGridViewEditMode.EditProgrammatically;
-            resourceList.Location = new Point(12, 12);
+            resourceList.Location = new Point(12, 84);
             resourceList.MultiSelect = false;
             resourceList.Name = "resourceList";
             resourceList.ReadOnly = true;
             resourceList.RowHeadersVisible = false;
             resourceList.RowHeadersWidth = 62;
+            resourceList.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             resourceList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             resourceList.ShowCellToolTips = false;
             resourceList.Size = new Size(606, 840);
@@ -208,7 +237,7 @@
             resourceListContextMenuItemExportSelected.Name = "resourceListContextMenuItemExportSelected";
             resourceListContextMenuItemExportSelected.Size = new Size(159, 32);
             resourceListContextMenuItemExportSelected.Text = "Export";
-            resourceListContextMenuItemExportSelected.Click += exportSelectedButton_Click;
+            resourceListContextMenuItemExportSelected.Click += exportSelectedToolStripMenuItem_Click;
             // 
             // infoBox
             // 
@@ -216,9 +245,10 @@
             infoBox.BorderStyle = BorderStyle.FixedSingle;
             infoBox.FormattingEnabled = true;
             infoBox.HorizontalScrollbar = true;
+            infoBox.IntegralHeight = false;
             infoBox.Location = new Point(6, 30);
             infoBox.Name = "infoBox";
-            infoBox.Size = new Size(348, 152);
+            infoBox.Size = new Size(348, 232);
             infoBox.TabIndex = 3;
             // 
             // searchButton
@@ -245,23 +275,11 @@
             resultsBox.TabIndex = 23;
             resultsBox.SelectedIndexChanged += resultsBox_SelectedIndexChanged;
             // 
-            // exportSelectedButton
-            // 
-            exportSelectedButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            exportSelectedButton.Enabled = false;
-            exportSelectedButton.Location = new Point(6, 228);
-            exportSelectedButton.Name = "exportSelectedButton";
-            exportSelectedButton.Size = new Size(171, 34);
-            exportSelectedButton.TabIndex = 7;
-            exportSelectedButton.Text = "Export Selected";
-            exportSelectedButton.UseVisualStyleBackColor = true;
-            exportSelectedButton.Click += exportSelectedButton_Click;
-            // 
             // replaceButton
             // 
             replaceButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             replaceButton.Enabled = false;
-            replaceButton.Location = new Point(242, 188);
+            replaceButton.Location = new Point(242, 268);
             replaceButton.Name = "replaceButton";
             replaceButton.Size = new Size(112, 34);
             replaceButton.TabIndex = 6;
@@ -273,37 +291,13 @@
             // 
             viewRawButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             viewRawButton.Enabled = false;
-            viewRawButton.Location = new Point(6, 188);
+            viewRawButton.Location = new Point(6, 268);
             viewRawButton.Name = "viewRawButton";
             viewRawButton.Size = new Size(112, 34);
             viewRawButton.TabIndex = 4;
             viewRawButton.Text = "View Raw";
             viewRawButton.UseVisualStyleBackColor = true;
             viewRawButton.Click += viewRawButton_Click;
-            // 
-            // saveButton
-            // 
-            saveButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            saveButton.Enabled = false;
-            saveButton.Location = new Point(754, 818);
-            saveButton.Name = "saveButton";
-            saveButton.Size = new Size(112, 34);
-            saveButton.TabIndex = 10;
-            saveButton.Text = "Save";
-            saveButton.UseVisualStyleBackColor = true;
-            saveButton.Click += saveButton_Click;
-            // 
-            // exportAllButton
-            // 
-            exportAllButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            exportAllButton.Enabled = false;
-            exportAllButton.Location = new Point(183, 228);
-            exportAllButton.Name = "exportAllButton";
-            exportAllButton.Size = new Size(171, 34);
-            exportAllButton.TabIndex = 8;
-            exportAllButton.Text = "Export All";
-            exportAllButton.UseVisualStyleBackColor = true;
-            exportAllButton.Click += exportAllButton_Click;
             // 
             // searchOptionsGroupBox
             // 
@@ -313,7 +307,7 @@
             searchOptionsGroupBox.Controls.Add(searchButton);
             searchOptionsGroupBox.Controls.Add(resultsBox);
             searchOptionsGroupBox.Enabled = false;
-            searchOptionsGroupBox.Location = new Point(630, 286);
+            searchOptionsGroupBox.Location = new Point(630, 398);
             searchOptionsGroupBox.Name = "searchOptionsGroupBox";
             searchOptionsGroupBox.Size = new Size(360, 526);
             searchOptionsGroupBox.TabIndex = 11;
@@ -483,41 +477,89 @@
             fileOptionsGroupBox.Controls.Add(infoBox);
             fileOptionsGroupBox.Controls.Add(viewRawButton);
             fileOptionsGroupBox.Controls.Add(editRawButton);
-            fileOptionsGroupBox.Controls.Add(exportAllButton);
             fileOptionsGroupBox.Controls.Add(replaceButton);
-            fileOptionsGroupBox.Controls.Add(exportSelectedButton);
-            fileOptionsGroupBox.Location = new Point(630, 12);
+            fileOptionsGroupBox.Location = new Point(630, 84);
             fileOptionsGroupBox.Name = "fileOptionsGroupBox";
-            fileOptionsGroupBox.Size = new Size(360, 268);
+            fileOptionsGroupBox.Size = new Size(360, 308);
             fileOptionsGroupBox.TabIndex = 3;
             fileOptionsGroupBox.TabStop = false;
             fileOptionsGroupBox.Text = "File";
             // 
-            // cancelButton
+            // menuStrip
             // 
-            cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            cancelButton.Location = new Point(878, 818);
-            cancelButton.Name = "cancelButton";
-            cancelButton.Size = new Size(112, 34);
-            cancelButton.TabIndex = 12;
-            cancelButton.Text = "Cancel";
-            cancelButton.UseVisualStyleBackColor = true;
-            cancelButton.Click += cancelButton_Click;
+            menuStrip.ImageScalingSize = new Size(24, 24);
+            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, toolsToolStripMenuItem });
+            menuStrip.Location = new Point(0, 0);
+            menuStrip.Name = "menuStrip";
+            menuStrip.Size = new Size(1002, 33);
+            menuStrip.TabIndex = 12;
+            menuStrip.Text = "Menu";
             // 
-            // LittleEditor
+            // fileToolStripMenuItem
+            // 
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openFileToolStripMenuItem, exportSelectedToolStripMenuItem, exportAllToolStripMenuItem, saveFileToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(54, 29);
+            fileToolStripMenuItem.Text = "File";
+            // 
+            // openFileToolStripMenuItem
+            // 
+            openFileToolStripMenuItem.Name = "openFileToolStripMenuItem";
+            openFileToolStripMenuItem.Size = new Size(236, 34);
+            openFileToolStripMenuItem.Text = "Open";
+            openFileToolStripMenuItem.Click += openFileToolStripMenuItem_Click;
+            // 
+            // exportSelectedToolStripMenuItem
+            // 
+            exportSelectedToolStripMenuItem.Name = "exportSelectedToolStripMenuItem";
+            exportSelectedToolStripMenuItem.Size = new Size(236, 34);
+            exportSelectedToolStripMenuItem.Text = "Export Selected";
+            exportSelectedToolStripMenuItem.Click += exportSelectedToolStripMenuItem_Click;
+            // 
+            // exportAllToolStripMenuItem
+            // 
+            exportAllToolStripMenuItem.Name = "exportAllToolStripMenuItem";
+            exportAllToolStripMenuItem.Size = new Size(236, 34);
+            exportAllToolStripMenuItem.Text = "Export All";
+            exportAllToolStripMenuItem.Click += exportAllToolStripMenuItem_Click;
+            // 
+            // saveFileToolStripMenuItem
+            // 
+            saveFileToolStripMenuItem.Name = "saveFileToolStripMenuItem";
+            saveFileToolStripMenuItem.Size = new Size(236, 34);
+            saveFileToolStripMenuItem.Text = "Save As";
+            saveFileToolStripMenuItem.Click += saveFileToolStripMenuItem_Click;
+            // 
+            // toolsToolStripMenuItem
+            // 
+            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { additionalInfoToolStripMenuItem });
+            toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            toolsToolStripMenuItem.Size = new Size(69, 29);
+            toolsToolStripMenuItem.Text = "Tools";
+            // 
+            // additionalInfoToolStripMenuItem
+            // 
+            additionalInfoToolStripMenuItem.Name = "additionalInfoToolStripMenuItem";
+            additionalInfoToolStripMenuItem.Size = new Size(270, 34);
+            additionalInfoToolStripMenuItem.Text = "Additional Info";
+            additionalInfoToolStripMenuItem.Click += additionalInfoToolStripMenuItem_Click;
+            // 
+            // MainWindow
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(1002, 864);
-            Controls.Add(cancelButton);
+            ClientSize = new Size(1002, 936);
+            Controls.Add(menuStrip);
             Controls.Add(fileOptionsGroupBox);
             Controls.Add(searchOptionsGroupBox);
-            Controls.Add(saveButton);
             Controls.Add(resourceList);
+            Controls.Add(pathBox);
+            Controls.Add(openFileButton);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            MainMenuStrip = menuStrip;
             MaximizeBox = false;
-            Name = "LittleEditor";
+            Name = "MainWindow";
             Text = "Big Viewer";
             ((System.ComponentModel.ISupportInitialize)resourceList).EndInit();
             resourceListContextMenu.ResumeLayout(false);
@@ -531,20 +573,23 @@
             searchTabPageString.ResumeLayout(false);
             searchTabPageString.PerformLayout();
             fileOptionsGroupBox.ResumeLayout(false);
+            menuStrip.ResumeLayout(false);
+            menuStrip.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private Button openFileButton;
         private Button editRawButton;
+        private TextBox pathBox;
         private DataGridView resourceList;
         private ListBox infoBox;
         private Button searchButton;
         private ListBox resultsBox;
-        private Button exportSelectedButton;
         private Button replaceButton;
         private Button viewRawButton;
-        private Button saveButton;
-        private Button exportAllButton;
         private ContextMenuStrip resourceListContextMenu;
         private ToolStripMenuItem resourceListContextMenuItemViewRaw;
         private ToolStripMenuItem resourceListContextMenuItemEditRaw;
@@ -571,6 +616,13 @@
         private CheckBox searchDataOnlyCheckBox;
         private RadioButton searchTabPageStringLatin;
         private RadioButton searchTabPageStringUTF16;
-        private Button cancelButton;
+        private MenuStrip menuStrip;
+        private ToolStripMenuItem toolsToolStripMenuItem;
+        private ToolStripMenuItem additionalInfoToolStripMenuItem;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem openFileToolStripMenuItem;
+        private ToolStripMenuItem exportSelectedToolStripMenuItem;
+        private ToolStripMenuItem exportAllToolStripMenuItem;
+        private ToolStripMenuItem saveFileToolStripMenuItem;
     }
 }

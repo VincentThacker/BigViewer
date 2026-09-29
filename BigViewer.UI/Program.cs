@@ -1,4 +1,4 @@
-namespace BigViewer
+namespace BigViewer.UI
 {
     internal static class Program
     {

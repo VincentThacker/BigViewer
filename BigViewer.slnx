@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="BigViewer/BigViewer.csproj" />
+  <Project Path="BigViewer.Core/BigViewer.Core.csproj" />
+  <Project Path="BigViewer.UI/BigViewer.UI.csproj" />
 </Solution>

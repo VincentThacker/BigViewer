@@ -49,7 +49,6 @@ namespace BigViewer.UI
             hexBox.MinimumSize = new Size(862, 0);
             hexBox.Name = "hexBox";
             hexBox.ReadOnly = true;
-            hexBox.ShadowSelectionColor = Color.FromArgb(100, 60, 188, 255);
             hexBox.Size = new Size(862, 960);
             hexBox.StringViewVisible = true;
             hexBox.TabIndex = 0;
@@ -122,6 +121,7 @@ namespace BigViewer.UI
             Controls.Add(cancelButton);
             Controls.Add(saveButton);
             Controls.Add(hexBox);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "HexEditor";
             ResumeLayout(false);
             PerformLayout();
